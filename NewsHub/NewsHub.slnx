@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="NewsHub.Domain/NewsHub.Domain.csproj" />
+  <Project Path="NewsHub.Infrastructure/NewsHub.Infrastructure.csproj" />
+  <Project Path="NewsHub.Services/NewsHub.Services.csproj" />
+  <Project Path="NewsHub.Web/NewsHub.Web.csproj" />
+</Solution>
