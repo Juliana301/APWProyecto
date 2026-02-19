@@ -1,0 +1,24 @@
+﻿.sidebar-transition {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.tab-active {
+    color: #f97316;
+    border-bottom: 2px solid #f97316;
+}
+
+.card-enter {
+    animation: cardIn 0.3s ease forwards;
+}
+
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
