@@ -6,65 +6,104 @@ APWProyecto/
 │
 ├── 📁 .github/
 │
-├── 📁 NewsHub/                         # Contenedor de la solución
+├── 📁 NewsHub/
 │   │
-│   ├── 📁 NewsHub.Web/                 # Web MVC + API integrada
-│   │   ├── 📁 Controllers/             # Controladores MVC (HTML)
+│   ├── 📁 NewsHub.Web/                     # Presentación (MVC + API)
+│   │   ├── 📁 Controllers/                 # MVC Controllers (HTML)
 │   │   │   ├── HomeController.cs
 │   │   │   ├── SourcesController.cs
 │   │   │   ├── SourceItemsController.cs
 │   │   │   ├── AdminController.cs
 │   │   │   └── SettingsController.cs
 │   │   │
-│   │   ├── 📁 Api/                     # Controladores REST (JSON)
+│   │   ├── 📁 Api/                         # API REST (JSON)
 │   │   │   ├── SourcesApiController.cs
 │   │   │   ├── SourceItemsApiController.cs
-│   │   │   ├── UploadApiController.cs
-│   │   │   └── DownloadApiController.cs
+│   │   │   └── ImportExportApiController.cs   # Unificado upload/download
 │   │   │
+│   │   ├── 📁 Filters/                     # Filtros personalizados (Roles, Logs)
+│   │   ├── 📁 Middlewares/                 # Manejo global de errores
 │   │   ├── 📁 ViewModels/
 │   │   ├── 📁 Views/
 │   │   ├── 📁 Areas/
 │   │   │   └── Identity/
 │   │   ├── 📁 wwwroot/
 │   │   ├── appsettings.json
+│   │   ├── appsettings.Development.json
 │   │   ├── Program.cs
 │   │   └── NewsHub.Web.csproj
 │   │
-│   ├── 📁 NewsHub.Domain/              # Entidades y reglas
+│   ├── 📁 NewsHub.Domain/                  # Núcleo del negocio (NO depende de nadie)
 │   │   ├── 📁 Entities/
 │   │   │   ├── Source.cs
 │   │   │   ├── SourceItem.cs
-│   │   │   └── Secret.cs
+│   │   │   ├── Secret.cs
+│   │   │   └── UserRole.cs
+│   │   │
 │   │   ├── 📁 Interfaces/
+│   │   │   ├── IRepository.cs
+│   │   │   ├── ISourceReader.cs            # Strategy Pattern
+│   │   │   ├── ISourceService.cs
+│   │   │   └── IUnitOfWork.cs
+│   │   │
 │   │   ├── 📁 Enums/
+│   │   │   ├── SourceType.cs               # Api, Feed, Html, Widget
+│   │   │   └── Roles.cs
+│   │   │
 │   │   └── NewsHub.Domain.csproj
 │   │
-│   ├── 📁 NewsHub.Services/            # Casos de uso
-│   │   ├── 📁 Services/
-│   │   │   ├── SourceService.cs
-│   │   │   ├── SourceItemService.cs
-│   │   │   ├── ParsingService.cs
-│   │   │   ├── UploadService.cs
-│   │   │   └── DownloadService.cs
+│   ├── 📁 NewsHub.Application/             # (ANTES Services) Casos de uso limpios
 │   │   ├── 📁 DTOs/
+│   │   │   ├── SourceDto.cs
+│   │   │   ├── SourceItemDto.cs
+│   │   │   └── ImportExportDto.cs
+│   │   │
 │   │   ├── 📁 Interfaces/
-│   │   └── NewsHub.Services.csproj
+│   │   │   ├── ISourceAppService.cs
+│   │   │   ├── ISourceItemAppService.cs
+│   │   │   └── IImportExportService.cs
+│   │   │
+│   │   ├── 📁 Services/
+│   │   │   ├── SourceAppService.cs
+│   │   │   ├── SourceItemAppService.cs
+│   │   │   └── ImportExportService.cs
+│   │   │
+│   │   └── NewsHub.Application.csproj
 │   │
-│   ├── 📁 NewsHub.Infrastructure/      # Base de datos + APIs externas
+│   ├── 📁 NewsHub.Infrastructure/          # Implementaciones técnicas
 │   │   ├── 📁 Data/
 │   │   │   ├── ApplicationDbContext.cs
+│   │   │   ├── SeedData.cs
 │   │   │   └── Configurations/
+│   │   │
 │   │   ├── 📁 Repositories/
-│   │   ├── 📁 External/
-│   │   ├── 📁 Parsers/
+│   │   │   ├── Repository.cs
+│   │   │   ├── SourceRepository.cs
+│   │   │   ├── SourceItemRepository.cs
+│   │   │   └── UnitOfWork.cs
+│   │   │
+│   │   ├── 📁 External/                    # Consumo APIs externas
+│   │   │   ├── ApiSourceReader.cs
+│   │   │   ├── XmlFeedSourceReader.cs
+│   │   │   ├── HtmlScraperSourceReader.cs
+│   │   │   └── SourceReaderFactory.cs      # Factory + Strategy
+│   │   │
+│   │   ├── 📁 Security/
+│   │   │   ├── SecretManager.cs
+│   │   │   └── EncryptionService.cs
+│   │   │
+│   │   ├── 📁 Parsing/
+│   │   │   ├── JsonParser.cs
+│   │   │   ├── XmlParser.cs
+│   │   │   └── HtmlParser.cs
+│   │   │
 │   │   └── NewsHub.Infrastructure.csproj
 │   │
-│   └── NewsHub.slnx
+│   └── NewsHub.sln
 │
 ├── .gitignore
 ├── README.md
-└── docker-compose.yml (opcional)
+└── docker-compose.yml
 ```
 
 ## Descripción de las Capas

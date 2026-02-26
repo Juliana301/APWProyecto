@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NewsHub.Web.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class NewsController : Controller
     {
         [HttpGet]
