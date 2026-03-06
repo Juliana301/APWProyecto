@@ -27,7 +27,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<SourceRepository>();
 builder.Services.AddScoped<SourceItemRepository>();
-builder.Services.AddScoped<SecretRepository>();
 
 builder.Services.AddScoped<SourceService>();
 builder.Services.AddScoped<SourceItemService>();
