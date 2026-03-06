@@ -1,0 +1,20 @@
+/* 1. Importación base de Tailwind v4 */
+@import "tailwindcss";
+
+/* 2. Definición de tu Tema (Fuentes, Colores, etc.) */
+@theme {
+    --font-inter: "Inter", sans-serif;
+}
+
+/* 3. Estilos Base (Lo que afecta a etiquetas HTML directamente) */
+@layer base {
+    @import url('https://fonts.googleapis.com');
+
+    body {
+        font-family: var(--font-inter);
+    }
+}
+
+/* 4. Import CSS Views */
+@import "./views/index.css";
+@import "./views/dashboard.css";
