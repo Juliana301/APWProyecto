@@ -1,0 +1,78 @@
+﻿@model IEnumerable<NewsHub.Domain.Entities.SourceItem>
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Noticias";
+}
+
+<div class="max-w-6xl mx-auto px-6 py-10">
+
+    <div class="flex items-center justify-between mb-6">
+
+        <h1 class="text-3xl font-bold">
+            Últimas Noticias
+        </h1>
+
+        <button onclick="fetchNews()"
+                class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition">
+            Actualizar noticias
+        </button>
+
+    </div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    @foreach (var item in Model)
+    {
+        var doc = JsonDocument.Parse(item.Json);
+
+        var title = doc.RootElement.GetProperty("title").GetString();
+        var description = doc.RootElement.GetProperty("description").GetString();
+        var image = doc.RootElement.GetProperty("imageUrl").GetString();
+
+        <div class="bg-white rounded-xl shadow p-4">
+
+            @if (!string.IsNullOrEmpty(image))
+            {
+                <img src="@image" class="rounded mb-3" />
+            }
+
+            <h2 class="font-bold text-lg mb-2">
+                @title
+            </h2>
+
+            <p class="text-gray-600 text-sm mb-3">
+                @description
+            </p>
+
+            <a asp-controller="News"
+               asp-action="Details"
+               asp-route-id="@item.Id"
+               class="text-orange-500 font-semibold">
+                Leer más
+            </a>
+
+        </div>
+    }
+
+</div>
+
+    <script>
+        async function fetchNews() {
+
+            const response = await fetch('/api/news/fetch', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+
+                alert("Noticias actualizadas");
+
+                location.reload();
+
+            } else {
+
+                alert("Error actualizando noticias");
+
+            }
+        }
+    </script>
