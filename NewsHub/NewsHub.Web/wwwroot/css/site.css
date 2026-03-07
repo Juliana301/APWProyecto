@@ -1,20 +1,72 @@
-/* 1. Importación base de Tailwind v4 */
 @import "tailwindcss";
 
-/* 2. Definición de tu Tema (Fuentes, Colores, etc.) */
+/* ===== CUSTOM THEME FOR TAILWIND v4 ===== */
 @theme {
-    --font-inter: "Inter", sans-serif;
+    /* Brand colors (orange) */
+    --color-brand-50: #fff7ed;
+    --color-brand-100: #ffedd5;
+    --color-brand-200: #fed7aa;
+    --color-brand-300: #fdba74;
+    --color-brand-400: #fb923c;
+    --color-brand-500: #f97316;
+    --color-brand-600: #ea580c;
+    --color-brand-700: #c2410c;
+    --color-brand-800: #9a3412;
+    --color-brand-900: #7c2d12;
+    /* Surface colors (slate) */
+    --color-surface-50: #f8fafc;
+    --color-surface-100: #f1f5f9;
+    --color-surface-200: #e2e8f0;
+    --color-surface-300: #cbd5e1;
+    --color-surface-400: #94a3b8;
+    --color-surface-500: #64748b;
+    --color-surface-600: #475569;
+    --color-surface-700: #334155;
+    --color-surface-800: #1e293b;
+    --color-surface-900: #0f172a;
+    --color-surface-950: #020617;
+    /* Font family */
+    --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
-/* 3. Estilos Base (Lo que afecta a etiquetas HTML directamente) */
-@layer base {
-    @import url('https://fonts.googleapis.com');
+/* ===== DARK MODE ===== */
+@variant dark (&:where(.dark, .dark *));
 
+/* ===== BASE STYLES ===== */
+@layer base {
     body {
-        font-family: var(--font-inter);
+        font-family: var(--font-family-sans);
     }
 }
 
-/* 4. Import CSS Views */
+/* ===== CUSTOM UTILITIES ===== */
+@layer utilities {
+    .sidebar-transition {
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .tab-active {
+        color: #f97316;
+        border-bottom: 2px solid #f97316;
+    }
+
+    .card-enter {
+        animation: cardIn 0.3s ease forwards;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @import "./views/index.css";
 @import "./views/dashboard.css";

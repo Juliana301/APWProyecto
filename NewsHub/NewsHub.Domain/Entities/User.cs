@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
@@ -9,6 +8,7 @@ namespace NewsHub.Domain.Entities
         public int Id { get; private set; }
 
         public string Email { get; private set; } = null!;
+        public string UserName { get; private set; } = null!;
         public string PasswordHash { get; private set; } = null!;
 
         public string FirstName { get; private set; } = null!;
@@ -23,9 +23,10 @@ namespace NewsHub.Domain.Entities
 
         private User() { } // EF
 
-        public User(string email, string passwordHash, string firstName, string lastName)
+        public User(string email, string userName, string passwordHash, string firstName, string lastName)
         {
             Email = email;
+            UserName = userName;
             PasswordHash = passwordHash;
             FirstName = firstName;
             LastName = lastName;

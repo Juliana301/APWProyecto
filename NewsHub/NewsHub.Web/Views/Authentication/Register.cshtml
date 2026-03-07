@@ -1,4 +1,5 @@
-﻿@*
+﻿@model RegisterViewModel
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
@@ -8,67 +9,86 @@
 
 <!-- Register Card -->
 <div class="bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-xl shadow-surface-200/50 dark:shadow-surface-950/50 p-8">
-    <form onsubmit="handleRegister(event)">
-        <!-- Full Name -->
+    <form asp-action="Register" method="post">
+        @Html.AntiForgeryToken()
+        <!-- First Name -->
         <div class="mb-5">
-            <label for="fullname" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Nombre completo</label>
+            <label asp-for="FirstName" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Nombre</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="user" class="w-4 h-4 text-surface-400"></i>
                 </div>
-                <input type="text" id="fullname" name="fullname" placeholder="Juan Perez" required
+                <input asp-for="FirstName" type="text" placeholder="Juan"
                        class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
             </div>
+            <span asp-validation-for="FirstName" class="text-red-500 text-xs"></span>
+        </div>
+        <!-- Last Name -->
+        <div class="mb-5">
+            <label asp-for="LastName" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Apellidos</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="user" class="w-4 h-4 text-surface-400"></i>
+                </div>
+                <input asp-for="LastName" type="text" placeholder="Perez"
+                       class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
+            </div>
+            <span asp-validation-for="LastName" class="text-red-500 text-xs"></span>
         </div>
         <!-- Email -->
         <div class="mb-5">
-            <label for="email" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Correo electronico</label>
+            <label asp-for="Email" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Correo electronico</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="mail" class="w-4 h-4 text-surface-400"></i>
                 </div>
-                <input type="email" id="email" name="email" placeholder="juan@ejemplo.com" required
+                <input asp-for="Email" type="email" placeholder="juan@ejemplo.com"
                        class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
             </div>
+            <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
         </div>
         <!-- Username -->
         <div class="mb-5">
-            <label for="username" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Nombre de usuario</label>
+            <label asp-for="UserName" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Nombre de usuario</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="at-sign" class="w-4 h-4 text-surface-400"></i>
                 </div>
-                <input type="text" id="username" name="username" placeholder="juanperez" required
+                <input asp-for="UserName" type="text" placeholder="juanperez"
                        class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
             </div>
+            <span asp-validation-for="UserName" class="text-red-500 text-xs"></span>
         </div>
         <!-- Password -->
         <div class="mb-5">
-            <label for="password" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Contrasena</label>
+            <label asp-for="Password" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Contrasena</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="lock" class="w-4 h-4 text-surface-400"></i>
                 </div>
-                <input type="password" id="password" name="password" placeholder="********" required minlength="6"
+                <input asp-for="Password" type="password" placeholder="********" minlength="6"
                        class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
             </div>
-            <p class="mt-1.5 text-xs text-surface-400">Minimo 6 caracteres</p>
+            <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
+            <p class="mt-1.5 text-xs text-surface-400">
+                Debe incluir mayúscula, minúscula, número y carácter especial.
+            </p>
         </div>
         <!-- Confirm Password -->
         <div class="mb-6">
-            <label for="confirm-password" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Confirmar contrasena</label>
+            <label asp-for="ConfirmPassword" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">Confirmar contrasena</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="lock" class="w-4 h-4 text-surface-400"></i>
                 </div>
-                <input type="password" id="confirm-password" name="confirm-password" placeholder="********" required minlength="6"
+                <input asp-for="ConfirmPassword" type="password" placeholder="********" minlength="6"
                        class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all" />
             </div>
+            <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs"></span>
         </div>
         <!-- Error message -->
-        <div id="error-msg" class="hidden mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
+        <div asp-validation-summary="ModelOnly" class="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
             <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
-            <span id="error-text"></span>
         </div>
         <!-- Submit -->
         <button type="submit"

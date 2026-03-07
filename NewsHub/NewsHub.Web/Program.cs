@@ -1,13 +1,53 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using NewsHub.Application.Interfaces.Authentication;
+using NewsHub.Application.Interfaces.Security;
+using NewsHub.Application.Services.Authentication;
+using NewsHub.Domain.Interfaces.Repositories;
+using NewsHub.Domain.Interfaces.Repositories.ErrorCatch;
+using NewsHub.Infrastructure.Data;
+using NewsHub.Infrastructure.Repositories;
+using NewsHub.Infrastructure.Repositories.CatchError;
+using NewsHub.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews(); // MVC + API
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// Service Cookie
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+// ======================================================
+// DATABASE
+// ======================================================
+
+var connectionString =
+    Environment.GetEnvironmentVariable("NewsHub_DB_Connection")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+
+// ======================================================
+// REPOSITORIES (Infrastructure Layer)
+// ======================================================
+
+builder.Services.AddScoped<ILogErrorRepository, LogErrorRepository>();
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+
+// ======================================================
+// APPLICATION / SECURITY SERVICES
+// ======================================================
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
+
+
+// ======================================================
+// AUTHENTICATION
+// ======================================================
+
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Authentication/Login";
@@ -17,7 +57,22 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
     });
 
+
+// ======================================================
+// MVC + API
+// ======================================================
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+
 var app = builder.Build();
+
+
+// ======================================================
+// MIDDLEWARE PIPELINE
+// ======================================================
 
 // Swagger solo en Development
 if (app.Environment.IsDevelopment())
@@ -31,7 +86,13 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();   // Importante
 app.UseAuthorization();
+
+
+// ======================================================
+// ENDPOINTS
+// ======================================================
 
 app.MapControllers(); // API
 

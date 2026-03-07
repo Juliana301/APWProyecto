@@ -20,9 +20,9 @@ const savedItems = [
 lucide.createIcons();
 if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
 
-const userName = localStorage.getItem('userName') || 'Usuario';
-document.getElementById('sidebar-username').textContent = userName;
-document.getElementById('sidebar-role').textContent = 'Conectado';
+//const userName = localStorage.getItem('userName') || 'Usuario';
+//document.getElementById('sidebar-username').textContent = "userName";
+//document.getElementById('sidebar-role').textContent = 'Conectado';
 
 renderFeed();
 renderSaved();
