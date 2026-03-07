@@ -4,6 +4,21 @@
     ViewData["Title"] = "Noticias";
 }
 
+<div class="max-w-6xl mx-auto px-6 py-10">
+
+    <div class="flex items-center justify-between mb-6">
+
+        <h1 class="text-3xl font-bold">
+            Últimas Noticias
+        </h1>
+
+        <button onclick="fetchNews()"
+                class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition">
+            Actualizar noticias
+        </button>
+
+    </div>
+
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
     @foreach (var item in Model)
@@ -40,3 +55,24 @@
     }
 
 </div>
+
+    <script>
+        async function fetchNews() {
+
+            const response = await fetch('/api/news/fetch', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+
+                alert("Noticias actualizadas");
+
+                location.reload();
+
+            } else {
+
+                alert("Error actualizando noticias");
+
+            }
+        }
+    </script>
