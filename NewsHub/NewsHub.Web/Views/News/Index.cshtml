@@ -1,12 +1,42 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<NewsHub.Domain.Entities.SourceItem>
+@using System.Text.Json
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Noticias";
 }
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/views/dashboard.css" />
-}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
+    @foreach (var item in Model)
+    {
+        var doc = JsonDocument.Parse(item.Json);
+
+        var title = doc.RootElement.GetProperty("title").GetString();
+        var description = doc.RootElement.GetProperty("description").GetString();
+        var image = doc.RootElement.GetProperty("imageUrl").GetString();
+
+        <div class="bg-white rounded-xl shadow p-4">
+
+            @if (!string.IsNullOrEmpty(image))
+            {
+                <img src="@image" class="rounded mb-3" />
+            }
+
+            <h2 class="font-bold text-lg mb-2">
+                @title
+            </h2>
+
+            <p class="text-gray-600 text-sm mb-3">
+                @description
+            </p>
+
+            <a asp-controller="News"
+               asp-action="Details"
+               asp-route-id="@item.Id"
+               class="text-orange-500 font-semibold">
+                Leer más
+            </a>
+
+        </div>
+    }
+
+</div>
