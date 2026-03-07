@@ -8,14 +8,10 @@ namespace NewsHub.Web.Api;
 public class SourceItemsApiController : ControllerBase
 {
     private readonly SourceItemService _sourceItemService;
-    private readonly ParsingService _parsingService;
 
-    public SourceItemsApiController(
-        SourceItemService sourceItemService,
-        ParsingService parsingService)
+    public SourceItemsApiController(SourceItemService sourceItemService)
     {
         _sourceItemService = sourceItemService;
-        _parsingService = parsingService;
     }
 
     [HttpGet]
@@ -34,16 +30,5 @@ public class SourceItemsApiController : ControllerBase
             return NotFound();
 
         return Ok(item);
-    }
-
-    [HttpPost("fetch")]
-    public async Task<IActionResult> FetchNews()
-    {
-        await _parsingService.FetchAllSourcesAsync();
-
-        return Ok(new
-        {
-            message = "News fetched successfully"
-        });
     }
 }
