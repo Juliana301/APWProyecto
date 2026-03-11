@@ -1,0 +1,38 @@
+﻿@model NewsHub.Domain.Entities.SourceItem
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Detalle de noticia";
+}
+
+<div class="max-w-4xl mx-auto px-6 py-10">
+
+    @{
+        var doc = JsonDocument.Parse(Model.Json);
+
+        var title = doc.RootElement.GetProperty("title").GetString();
+        var description = doc.RootElement.GetProperty("description").GetString();
+        var image = doc.RootElement.GetProperty("imageUrl").GetString();
+        var url = doc.RootElement.GetProperty("url").GetString();
+    }
+
+    <div class="bg-white rounded-xl shadow p-6">
+
+        <img src="@image" class="w-full rounded-lg mb-6" />
+
+        <h1 class="text-3xl font-bold mb-4">
+            @title
+        </h1>
+
+        <p class="text-gray-600 mb-6">
+            @description
+        </p>
+
+        <a href="@url" target="_blank"
+           class="text-orange-500 font-semibold">
+            Leer noticia original
+        </a>
+
+    </div>
+
+</div>

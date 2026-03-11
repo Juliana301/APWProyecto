@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - NewsHub</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+          darkMode: 'class',
+          theme: {
+            extend: {
+              colors: {
+                brand: { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c',700:'#c2410c',800:'#9a3412',900:'#7c2d12' },
+                surface: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' }
+              }
+            }
+          }
+        }
+    </script>
+
+    <link rel="stylesheet" href="~/css/output.css" />
+
+    @RenderSection("Styles", required: false)
+</head>
+
+<body class="bg-surface-50 text-surface-900 dark:bg-surface-900 dark:text-surface-100 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-surface-900/80 backdrop-blur-md border-b border-surface-200 dark:border-surface-700">
+
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+
+            <!-- Logo -->
+            <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center">
+                    <i data-lucide="rss" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">NewsHub</span>
+            </a>
+
+            <!-- Desktop menu -->
+            <div class="hidden md:flex items-center gap-8">
+
+                <a asp-controller="Home" asp-action="Index"
+                   class="text-sm font-medium text-brand-600 dark:text-brand-400">
+                    Inicio
+                </a>
+
+                <a asp-controller="News" asp-action="Index"
+                   class="text-sm font-medium text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 transition-colors">
+                    Explorar
+                </a>
+
+            </div>
+
+            <!-- Right side -->
+            <div class="flex items-center gap-3">
+
+                <!-- Dark mode -->
+                <button onclick="toggleDarkMode()"
+                        class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
+
+                    <i data-lucide="sun" class="w-5 h-5 dark:hidden"></i>
+                    <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+
+                </button>
+
+                <!-- Login -->
+                <a asp-controller="Authentication"
+                   asp-action="Login"
+                   class="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors">
+
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    Iniciar Sesión
+
+                </a>
+
+                <!-- Mobile -->
+                <button onclick="toggleMobileMenu()"
+                        class="md:hidden p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800">
+
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu"
+             class="hidden md:hidden border-t border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 px-6 py-4 space-y-3">
+
+            <a asp-controller="Home" asp-action="Index"
+               class="block text-sm font-medium text-brand-600 dark:text-brand-400">
+                Inicio
+            </a>
+
+            <a asp-controller="News" asp-action="Index"
+               class="block text-sm font-medium text-surface-500 hover:text-surface-900 dark:hover:text-surface-100">
+                Explorar
+            </a>
+
+            <a asp-controller="Authentication" asp-action="Login"
+               class="block text-sm font-medium text-brand-600 dark:text-brand-400">
+                Iniciar Sesión
+            </a>
+
+        </div>
+
+    </nav>
+
+    <!-- Content -->
+    <main class="flex-1">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900">
+
+        <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-md bg-brand-500 flex items-center justify-center">
+                    <i data-lucide="rss" class="w-4 h-4 text-white"></i>
+                </div>
+                <span class="text-sm font-semibold">NewsHub</span>
+            </div>
+
+            <p class="text-xs text-surface-400">
+                2026 NewsHub. Proyecto universitario - Agregador de noticias multi-fuente.
+            </p>
+
+        </div>
+
+    </footer>
+
+    <script>
+
+        lucide.createIcons();
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+
+    </script>
+
+</body>
+</html>
