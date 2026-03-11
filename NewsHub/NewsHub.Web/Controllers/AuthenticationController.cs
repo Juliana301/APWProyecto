@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewsHub.Application.DTOs.Authentication;
 using NewsHub.Application.DTOs.User;
 using NewsHub.Application.Interfaces.Authentication;
+using NewsHub.Application.Interfaces.Tokens;
 using NewsHub.Web.ViewModels.Authentication;
 using System.Security.Claims;
 
@@ -13,10 +14,15 @@ namespace NewsHub.Web.Controllers
     public class AuthenticationController : Controller
     {
         private readonly IAuthService _authService;
+        private readonly IPasswordResetTokenService _passwordResetTokenService;
 
-        public AuthenticationController(IAuthService authService)
+        public AuthenticationController(
+            IAuthService authService,
+            IPasswordResetTokenService passwordResetTokenService
+            )
         {
             _authService = authService;
+            _passwordResetTokenService = passwordResetTokenService;
         }
 
         [HttpGet]
@@ -102,6 +108,13 @@ namespace NewsHub.Web.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpPost]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            return View();
+        }
+
         [HttpGet]
         public IActionResult ForgotPassword()
         {
@@ -109,10 +122,60 @@ namespace NewsHub.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize]
-        public IActionResult Logout()
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
-            return View();
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var dto = new ForgotPasswordDto { Email = model.Email };
+
+            var result = await _authService.ForgotPasswordAsync(dto);
+
+            if (!result.Success)
+            {
+                ModelState.AddModelError("", result.Error!);
+                return View(model);
+            }
+
+            return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return RedirectToAction("Login");
+
+            var result = await _passwordResetTokenService.ValidateTokenAsync(token);
+
+            if (!result.Success)
+            {
+                TempData["ToastType"] = "error";
+                TempData["ToastMessage"] = result.Error;
+                return RedirectToAction("Login");
+            }
+
+            var model = new PasswordResetViewModel
+            {
+                Token = token
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ResetPassword(PasswordResetViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            return RedirectToAction("Login");
         }
 
 

@@ -20,7 +20,8 @@ namespace NewsHub.Domain.Entities
         public DateTime? LastLoginAt { get; private set; }
 
         public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
-
+        public ICollection<PasswordResetToken> PasswordResetTokens { get; private set; } = new List<PasswordResetToken>();
+        
         private User() { } // EF
 
         public User(string email, string userName, string passwordHash, string firstName, string lastName)

@@ -2,7 +2,9 @@
 using NewsHub.Application.DTOs.Authentication;
 using NewsHub.Application.DTOs.User;
 using NewsHub.Application.Interfaces.Authentication;
+using NewsHub.Application.Interfaces.Notifications;
 using NewsHub.Application.Interfaces.Security;
+using NewsHub.Application.Interfaces.Tokens;
 using NewsHub.Domain.Entities;
 using NewsHub.Domain.Interfaces.Repositories;
 
@@ -12,13 +14,20 @@ namespace NewsHub.Application.Services.Authentication
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasherService _passwordHasher;
+        private readonly IPasswordResetTokenService _passwordResetTokenService;
+        private readonly IEmailSender _emailSender;
 
         public AuthService(
             IUserRepository userRepository,
-            IPasswordHasherService passwordHasher)
+            IPasswordHasherService passwordHasher,
+            IPasswordResetTokenService passwordResetTokenService,
+            IEmailSender emailSender
+           )
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
+            _passwordResetTokenService = passwordResetTokenService;
+            _emailSender = emailSender;
         }
 
         public async Task<Result<bool>> RegisterAsync(RegisterDto dto)
@@ -84,5 +93,54 @@ namespace NewsHub.Application.Services.Authentication
 
             return Result<UserDto>.Ok(dtoUser);
         }
+
+        public async Task<Result<bool>> ForgotPasswordAsync(ForgotPasswordDto dto)
+        {
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
+
+            if (user == null)
+                return Result<bool>.Ok(true);
+
+            // Crear token
+            var tokenResult = await _passwordResetTokenService.CreateTokenAsync(user.Id);
+
+            if (!tokenResult.Success)
+                return Result<bool>.Fail("No se pudo generar el token.");
+
+            var token = tokenResult.Data!.Token;
+
+            var resetLink = $"https://localhost:7274/Authentication/ResetPassword?token={token}";
+
+            // Cargar template
+            var html = LoadEmailTemplate("RecoverPasswordEmail.html");
+
+            html = html.Replace("{{USER_NAME}}", user.FirstName);
+            html = html.Replace("{{RESET_LINK}}", resetLink);
+            html = html.Replace("{{EXPIRES_AT}}", tokenResult.Data.ExpiresAt.ToString());
+
+            await _emailSender.SendAsync(
+                user.Email,
+                "Reset your password",
+                html
+            );
+
+            return Result<bool>.Ok(true);
+        }
+
+        #region Private methods
+        private string LoadEmailTemplate(string templateName)
+        {
+            var basePath = AppContext.BaseDirectory;
+
+            var path = Path.Combine(
+                basePath,
+                "Email",
+                "Templates",
+                templateName
+            );
+
+            return File.ReadAllText(path);
+        }
+        #endregion
     }
 }
