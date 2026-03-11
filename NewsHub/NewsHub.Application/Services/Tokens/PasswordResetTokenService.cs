@@ -50,10 +50,10 @@ namespace NewsHub.Application.Services.Tokens
             );
 
             if (token == null)
-                return Result<PasswordResetToken>.Fail("Token inválido.");
+                return Result<PasswordResetToken>.Fail("Token inválido.", TypeMessage.Error);
 
             if (!token.IsValid())
-                return Result<PasswordResetToken>.Fail("El token ha expirado o ya fue usado.");
+                return Result<PasswordResetToken>.Fail("El token ha expirado o ya fue usado.", TypeMessage.Warning);
 
             return Result<PasswordResetToken>.Ok(token);
         }

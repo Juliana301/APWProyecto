@@ -1,4 +1,5 @@
 ﻿using NewsHub.Application.Common;
+using NewsHub.Application.Configuration;
 using NewsHub.Application.DTOs.Authentication;
 using NewsHub.Application.DTOs.User;
 using NewsHub.Application.Interfaces.Authentication;
@@ -16,18 +17,21 @@ namespace NewsHub.Application.Services.Authentication
         private readonly IPasswordHasherService _passwordHasher;
         private readonly IPasswordResetTokenService _passwordResetTokenService;
         private readonly IEmailSender _emailSender;
+        private readonly AppSettings _appSettings;
 
         public AuthService(
             IUserRepository userRepository,
             IPasswordHasherService passwordHasher,
             IPasswordResetTokenService passwordResetTokenService,
-            IEmailSender emailSender
+            IEmailSender emailSender,
+            AppSettings appSettings
            )
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _passwordResetTokenService = passwordResetTokenService;
             _emailSender = emailSender;
+            _appSettings = appSettings;
         }
 
         public async Task<Result<bool>> RegisterAsync(RegisterDto dto)
@@ -35,12 +39,12 @@ namespace NewsHub.Application.Services.Authentication
             // Verificar email
             var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
             if (existingUser != null)
-                return Result<bool>.Fail("El email ya está registrado.");
+                return Result<bool>.Fail("El email ya está registrado.", TypeMessage.Warning);
 
             // Verificar username
             var existingUserName = await _userRepository.GetByUserNameAsync(dto.UserName);
             if (existingUserName != null)
-                return Result<bool>.Fail("El username ya existe.");
+                return Result<bool>.Fail("El username ya existe.", TypeMessage.Warning);
 
             // Hash password
             var hash = _passwordHasher.HashPassword(dto.Password);
@@ -64,15 +68,15 @@ namespace NewsHub.Application.Services.Authentication
             // Buscar usuario
             var user = await _userRepository.GetByUserNameAsync(dto.UserName);
             if (user == null)
-                return Result<UserDto>.Fail("Usuario o contraseña incorrectos.");
+                return Result<UserDto>.Fail("Usuario o contraseña incorrectos.", TypeMessage.Warning);
 
             if (!user.IsActive)
-                return Result<UserDto>.Fail("El usuario está deshabilitado.");
+                return Result<UserDto>.Fail("El usuario está deshabilitado.", TypeMessage.Warning);
 
             // Verificar password
             var isValid = _passwordHasher.VerifyPassword(user.PasswordHash, dto.Password);
             if (!isValid)
-                return Result<UserDto>.Fail("Usuario o contraseña incorrectos.");
+                return Result<UserDto>.Fail("Usuario o contraseña incorrectos.", TypeMessage.Warning);
 
             // Actualizar último login
             user.UpdateLastLogin();
@@ -105,11 +109,11 @@ namespace NewsHub.Application.Services.Authentication
             var tokenResult = await _passwordResetTokenService.CreateTokenAsync(user.Id);
 
             if (!tokenResult.Success)
-                return Result<bool>.Fail("No se pudo generar el token.");
+                return Result<bool>.Fail("No se pudo generar el token.", TypeMessage.Error);
 
             var token = tokenResult.Data!.Token;
 
-            var resetLink = $"https://localhost:7274/Authentication/ResetPassword?token={token}";
+            var resetLink = $"{_appSettings.BaseUrl}/Authentication/ResetPassword?token={token}";
 
             // Cargar template
             var html = LoadEmailTemplate("RecoverPasswordEmail.html");

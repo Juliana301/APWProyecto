@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using NewsHub.Application.Configuration;
 using NewsHub.Application.Interfaces.Authentication;
 using NewsHub.Application.Interfaces.Notifications;
 using NewsHub.Application.Interfaces.Security;
@@ -18,6 +19,13 @@ using NewsHub.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ======================================================
+// LOGGING
+// ======================================================
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 // ======================================================
 // DATABASE
@@ -27,20 +35,28 @@ var connectionString =
     Environment.GetEnvironmentVariable("NewsHub_DB_Connection")
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Database connection string is not configured.");
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// ======================================================
+// CONFIGURATIONS APPLICATION
+// ======================================================
+
+builder.Services.Configure<AppSettings>(
+    builder.Configuration.GetSection("AppSettings"));
 
 // ======================================================
 // REPOSITORIES (Infrastructure Layer)
 // ======================================================
 
 builder.Services.AddScoped<ILogErrorRepository, LogErrorRepository>();
-
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
-
-
 
 // ======================================================
 // APPLICATION / SECURITY SERVICES
@@ -74,7 +90,6 @@ builder.Services
         options.SlidingExpiration = true;
     });
 
-
 // ======================================================
 // MVC + API
 // ======================================================
@@ -83,19 +98,40 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 var app = builder.Build();
 
+// ======================================================
+// GLOBAL EXCEPTION HANDLING
+// ======================================================
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+{
+    var ex = eventArgs.ExceptionObject as Exception;
+    logger.LogCritical(ex, "Unhandled exception occurred.");
+};
+
+TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
+{
+    logger.LogCritical(eventArgs.Exception, "Unobserved task exception.");
+    eventArgs.SetObserved();
+};
 
 // ======================================================
 // MIDDLEWARE PIPELINE
 // ======================================================
 
-// Swagger solo en Development
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -103,15 +139,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication();   // Importante
+app.UseAuthentication();
 app.UseAuthorization();
-
 
 // ======================================================
 // ENDPOINTS
 // ======================================================
 
-app.MapControllers(); // API
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",

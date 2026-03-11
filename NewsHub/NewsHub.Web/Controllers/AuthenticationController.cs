@@ -6,6 +6,7 @@ using NewsHub.Application.DTOs.Authentication;
 using NewsHub.Application.DTOs.User;
 using NewsHub.Application.Interfaces.Authentication;
 using NewsHub.Application.Interfaces.Tokens;
+using NewsHub.Web.Common.Extensions;
 using NewsHub.Web.ViewModels.Authentication;
 using System.Security.Claims;
 
@@ -153,8 +154,7 @@ namespace NewsHub.Web.Controllers
 
             if (!result.Success)
             {
-                TempData["ToastType"] = "error";
-                TempData["ToastMessage"] = result.Error;
+                TempData.SetToast(result.Error!, result.TypeMessage);
                 return RedirectToAction("Login");
             }
 
