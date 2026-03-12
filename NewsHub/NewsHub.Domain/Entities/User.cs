@@ -35,6 +35,11 @@ namespace NewsHub.Domain.Entities
             CreatedAt = DateTime.UtcNow;
         }
 
+        public void ChangePassword(string newPasswordHash)
+        {
+            PasswordHash = newPasswordHash;
+        }
+
         public void UpdateLastLogin()
         {
             LastLoginAt = DateTime.UtcNow;

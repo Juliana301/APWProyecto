@@ -12,5 +12,6 @@ namespace NewsHub.Application.Interfaces.Authentication
         Task<Result<bool>> RegisterAsync(RegisterDto dto);
         Task<Result<UserDto>> LoginAsync(LoginDto dto);
         Task<Result<bool>> ForgotPasswordAsync(ForgotPasswordDto dto);
+        Task<Result<bool>> ResetPasswordAsync(PasswordResetTokenDto dto);
     }
 }

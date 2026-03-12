@@ -168,11 +168,21 @@ namespace NewsHub.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ResetPassword(PasswordResetViewModel model)
+        public async Task<IActionResult> ResetPassword(PasswordResetViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
+            }
+
+            var dto = new PasswordResetTokenDto { Token = model.Token, Password = model.Password};
+
+            var result = await _authService.ResetPasswordAsync(dto);
+
+            if (!result.Success)
+            {
+                TempData.SetToast(result.Error!, result.TypeMessage);
+                return RedirectToAction("Login");
             }
 
             return RedirectToAction("Login");

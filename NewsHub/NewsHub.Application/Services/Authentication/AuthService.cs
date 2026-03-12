@@ -1,4 +1,5 @@
-﻿using NewsHub.Application.Common;
+﻿using Microsoft.Extensions.Options;
+using NewsHub.Application.Common;
 using NewsHub.Application.Configuration;
 using NewsHub.Application.DTOs.Authentication;
 using NewsHub.Application.DTOs.User;
@@ -24,14 +25,14 @@ namespace NewsHub.Application.Services.Authentication
             IPasswordHasherService passwordHasher,
             IPasswordResetTokenService passwordResetTokenService,
             IEmailSender emailSender,
-            AppSettings appSettings
+            IOptionsMonitor<AppSettings> appSettings
            )
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _passwordResetTokenService = passwordResetTokenService;
             _emailSender = emailSender;
-            _appSettings = appSettings;
+            _appSettings = appSettings.CurrentValue;
         }
 
         public async Task<Result<bool>> RegisterAsync(RegisterDto dto)
@@ -129,6 +130,36 @@ namespace NewsHub.Application.Services.Authentication
             );
 
             return Result<bool>.Ok(true);
+        }
+
+        public async Task<Result<bool>> ResetPasswordAsync(PasswordResetTokenDto dto)
+        {
+            // Validar token
+            var tokenResult = await _passwordResetTokenService.ValidateTokenAsync(dto.Token);
+
+            if (!tokenResult.Success)
+                return Result<bool>.Fail(tokenResult.Error!, tokenResult.TypeMessage);
+
+            var token = tokenResult.Data!;
+
+            // Buscar usuario
+            var user = await _userRepository.GetByIdAsync(token.UserId);
+
+            if (user == null)
+                return Result<bool>.Fail("Usuario no encontrado.", TypeMessage.Error);
+
+            // Hashear nueva contraseña
+            var newHash = _passwordHasher.HashPassword(dto.Password);
+
+            user.ChangePassword(newHash);
+
+            await _userRepository.UpdateAsync(user);
+
+            // Marcar token como usado
+            await _passwordResetTokenService.MarkTokenAsUsedAsync(token);
+
+            return Result<bool>.Ok(true);
+
         }
 
         #region Private methods

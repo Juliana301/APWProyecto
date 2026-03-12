@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NewsHub.Application.DTOs.Authentication
 {
-    public class ResetPasswordTokenDto
+    public class PasswordResetTokenDto
     {
         public string Token { get; set; } = null!;
         public string Password { get; set; } = null!;

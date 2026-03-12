@@ -20,7 +20,7 @@ namespace NewsHub.Application.Services.Tokens
             _passwordResetTokenRepository = passwordResetTokenRepository;
         }
 
-        public async Task<Result<ResetPasswordTokenDto>> CreateTokenAsync(int userId)
+        public async Task<Result<PasswordResetTokenDto>> CreateTokenAsync(int userId)
         {
             var tokenValue = Guid.NewGuid().ToString();
 
@@ -30,7 +30,7 @@ namespace NewsHub.Application.Services.Tokens
 
             await _passwordResetTokenRepository.AddAsync(token);
 
-            return Result<ResetPasswordTokenDto>.Ok(new ResetPasswordTokenDto
+            return Result<PasswordResetTokenDto>.Ok(new PasswordResetTokenDto
             {
                 Token = tokenValue,
                 ExpiresAt = expiresAt

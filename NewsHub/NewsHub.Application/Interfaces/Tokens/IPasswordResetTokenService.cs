@@ -9,7 +9,7 @@ namespace NewsHub.Application.Interfaces.Tokens
 {
     public interface IPasswordResetTokenService
     {
-        Task<Result<ResetPasswordTokenDto>> CreateTokenAsync(int userId);
+        Task<Result<PasswordResetTokenDto>> CreateTokenAsync(int userId);
         Task<Result<PasswordResetToken>> ValidateTokenAsync(string tokenValue);
         Task MarkTokenAsUsedAsync(PasswordResetToken token);
     }

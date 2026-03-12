@@ -1,193 +1,186 @@
-﻿
-<div style="margin: 0; padding: 40px; background-color: #0f172a; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh;">
+﻿@if (TempData["ToastMessage"] != null)
+{
+    <div id="toast-notification"
+         data-type="@(TempData["ToastType"] ?? "info")"
+         data-visible="true"
+         style="
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 9999;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        min-width: 320px;
+        animation: slideIn 0.3s ease-out;
+        ">
 
-    @if (TempData["ToastMessage"] != null)
-    {
-        <div id="toast-notification"
-             data-type="@(TempData["ToastType"] ?? "info")"
-             data-visible="true"
-             style="
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 9999;
+        <!-- ICON -->
+        <div id="toast-icon" style="
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-            min-width: 320px;
-            animation: slideIn 0.3s ease-out;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
             ">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="3"
+                 stroke-linecap="round" stroke-linejoin="round">
 
-            <!-- ICON -->
-            <div id="toast-icon" style="
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                ">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="3"
-                     stroke-linecap="round" stroke-linejoin="round">
+                <polyline id="icon-success" points="20 6 9 17 4 12"></polyline>
 
-                    <polyline id="icon-success" points="20 6 9 17 4 12"></polyline>
-
-                    <g id="icon-error" style="display:none;">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </g>
-
-                    <g id="icon-warning" style="display:none;">
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <circle cx="12" cy="17" r="1" fill="currentColor"></circle>
-                    </g>
-
-                    <g id="icon-info" style="display:none;">
-                        <circle cx="12" cy="8" r="1" fill="currentColor"></circle>
-                        <line x1="12" y1="12" x2="12" y2="17"></line>
-                    </g>
-
-                </svg>
-            </div>
-
-            <!-- MESSAGE -->
-            <div style="flex:1;padding-top:2px;">
-                <span id="toast-message" style="
-                    font-size:14px;
-                    font-weight:500;
-                    line-height:1.5;">
-                    @TempData["ToastMessage"]
-                </span>
-            </div>
-
-            <!-- CLOSE -->
-            <button onclick="closeToast()" style="
-                background:none;
-                border:none;
-                padding:4px;
-                cursor:pointer;
-                opacity:.6;
-                transition:opacity .2s;
-                flex-shrink:0;"
-                    onmouseover="this.style.opacity='1'"
-                    onmouseout="this.style.opacity='.6'">
-
-                <svg width="16" height="16" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor"
-                     stroke-width="2"
-                     stroke-linecap="round"
-                     stroke-linejoin="round">
-
+                <g id="icon-error" style="display:none;">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
+                </g>
 
-                </svg>
-            </button>
+                <g id="icon-warning" style="display:none;">
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <circle cx="12" cy="17" r="1" fill="currentColor"></circle>
+                </g>
 
+                <g id="icon-info" style="display:none;">
+                    <circle cx="12" cy="8" r="1" fill="currentColor"></circle>
+                    <line x1="12" y1="12" x2="12" y2="17"></line>
+                </g>
+
+            </svg>
         </div>
+
+        <!-- MESSAGE -->
+        <div style="flex:1;padding-top:2px;">
+            <span id="toast-message" style="
+                font-size:14px;
+                font-weight:500;
+                line-height:1.5;">
+                @TempData["ToastMessage"]
+            </span>
+        </div>
+
+        <!-- CLOSE -->
+        <button onclick="closeToast()" style="
+            background:none;
+            border:none;
+            padding:4px;
+            cursor:pointer;
+            opacity:.6;
+            transition:opacity .2s;
+            flex-shrink:0;"
+                onmouseover="this.style.opacity='1'"
+                onmouseout="this.style.opacity='.6'">
+
+            <svg width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+
+            </svg>
+        </button>
+
+    </div>
+}
+
+<!-- ESTILOS Y SCRIPT -->
+<link href="~/css/pop_ups/toas.css" rel="stylesheet" />
+
+<script>
+    // Configuración de colores por tipo
+    const toastStyles = {
+        success: {
+            bg: '#022c22',
+            border: '#059669',
+            iconBg: '#059669',
+            iconColor: '#ffffff',
+            textColor: '#d1fae5'
+        },
+        error: {
+            bg: '#450a0a',
+            border: '#dc2626',
+            iconBg: '#dc2626',
+            iconColor: '#ffffff',
+            textColor: '#fecaca'
+        },
+        warning: {
+            bg: '#451a03',
+            border: '#f97316',
+            iconBg: '#f97316',
+            iconColor: '#ffffff',
+            textColor: '#fed7aa'
+        },
+        info: {
+            bg: '#0c1a3d',
+            border: '#3b82f6',
+            iconBg: '#3b82f6',
+            iconColor: '#ffffff',
+            textColor: '#bfdbfe'
+        }
+    };
+
+    function initToast() {
+        const toast = document.getElementById('toast-notification');
+        if (!toast) return;
+
+        const type = toast.getAttribute('data-type') || 'info';
+        const visible = toast.getAttribute('data-visible') === 'true';
+        const style = toastStyles[type] || toastStyles.info;
+
+        // Aplicar estilos según el tipo
+        toast.style.backgroundColor = style.bg;
+        toast.style.border = `1px solid ${style.border}`;
+        toast.style.display = visible ? 'flex' : 'none';
+
+        // Icono
+        const iconContainer = document.getElementById('toast-icon');
+        iconContainer.style.backgroundColor = style.iconBg;
+        iconContainer.style.color = style.iconColor;
+
+        // Mostrar solo el icono correcto
+        document.getElementById('icon-success').style.display = type === 'success' ? 'block' : 'none';
+        document.getElementById('icon-error').style.display = type === 'error' ? 'block' : 'none';
+        document.getElementById('icon-warning').style.display = type === 'warning' ? 'block' : 'none';
+        document.getElementById('icon-info').style.display = type === 'info' ? 'block' : 'none';
+
+        // Texto
+        document.getElementById('toast-message').style.color = style.textColor;
+
+        // Botón cerrar
+        toast.querySelector('button svg').style.color = style.textColor;
+
+        // Auto-cerrar después de 5 segundos
+        if (visible) {
+            setTimeout(closeToast, 5000);
+        }
     }
 
-    <!-- ESTILOS Y SCRIPT -->
-    <link href="~/css/pop_ups/toas.css" rel="stylesheet"/>
+    function closeToast() {
+        const toast = document.getElementById('toast-notification');
+        toast.style.animation = 'slideOut 0.3s ease-in forwards';
+        setTimeout(() => {
+            toast.style.display = 'none';
+            toast.setAttribute('data-visible', 'false');
+        }, 300);
+    }
 
-    <script>
-            // Configuración de colores por tipo
-            const toastStyles = {
-                success: {
-                    bg: '#022c22',
-                    border: '#059669',
-                    iconBg: '#059669',
-                    iconColor: '#ffffff',
-                    textColor: '#d1fae5'
-                },
-                error: {
-                    bg: '#450a0a',
-                    border: '#dc2626',
-                    iconBg: '#dc2626',
-                    iconColor: '#ffffff',
-                    textColor: '#fecaca'
-                },
-                warning: {
-                    bg: '#451a03',
-                    border: '#f97316',
-                    iconBg: '#f97316',
-                    iconColor: '#ffffff',
-                    textColor: '#fed7aa'
-                },
-                info: {
-                    bg: '#0c1a3d',
-                    border: '#3b82f6',
-                    iconBg: '#3b82f6',
-                    iconColor: '#ffffff',
-                    textColor: '#bfdbfe'
-                }
-            };
+    // Función para mostrar toast desde JS (opcional)
+    function showToast(type, message) {
+        const toast = document.getElementById('toast-notification');
+        toast.setAttribute('data-type', type);
+        toast.setAttribute('data-visible', 'true');
+        document.getElementById('toast-message').textContent = message;
+        toast.style.animation = 'slideIn 0.3s ease-out';
+        initToast();
+    }
 
-            function initToast() {
-                const toast = document.getElementById('toast-notification');
-                if (!toast) return;
-
-                const type = toast.getAttribute('data-type') || 'info';
-                const visible = toast.getAttribute('data-visible') === 'true';
-                const style = toastStyles[type] || toastStyles.info;
-
-                // Aplicar estilos según el tipo
-                toast.style.backgroundColor = style.bg;
-                toast.style.border = `1px solid ${style.border}`;
-                toast.style.display = visible ? 'flex' : 'none';
-
-                // Icono
-                const iconContainer = document.getElementById('toast-icon');
-                iconContainer.style.backgroundColor = style.iconBg;
-                iconContainer.style.color = style.iconColor;
-
-                // Mostrar solo el icono correcto
-                document.getElementById('icon-success').style.display = type === 'success' ? 'block' : 'none';
-                document.getElementById('icon-error').style.display = type === 'error' ? 'block' : 'none';
-                document.getElementById('icon-warning').style.display = type === 'warning' ? 'block' : 'none';
-                document.getElementById('icon-info').style.display = type === 'info' ? 'block' : 'none';
-
-                // Texto
-                document.getElementById('toast-message').style.color = style.textColor;
-
-                // Botón cerrar
-                toast.querySelector('button svg').style.color = style.textColor;
-
-                // Auto-cerrar después de 5 segundos
-                if (visible) {
-                    setTimeout(closeToast, 5000);
-                }
-            }
-
-            function closeToast() {
-                const toast = document.getElementById('toast-notification');
-                toast.style.animation = 'slideOut 0.3s ease-in forwards';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                    toast.setAttribute('data-visible', 'false');
-                }, 300);
-            }
-
-            // Función para mostrar toast desde JS (opcional)
-            function showToast(type, message) {
-                const toast = document.getElementById('toast-notification');
-                toast.setAttribute('data-type', type);
-                toast.setAttribute('data-visible', 'true');
-                document.getElementById('toast-message').textContent = message;
-                toast.style.animation = 'slideIn 0.3s ease-out';
-                initToast();
-            }
-
-            // Inicializar al cargar
-            document.addEventListener('DOMContentLoaded', initToast);
-    </script>
-
-    
-
-</div>
+    // Inicializar al cargar
+    document.addEventListener('DOMContentLoaded', initToast);
+</script>
