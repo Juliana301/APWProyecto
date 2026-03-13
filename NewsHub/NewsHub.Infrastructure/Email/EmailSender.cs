@@ -20,7 +20,7 @@ namespace NewsHub.Infrastructure.Email
                 ?? throw new ArgumentNullException("AzureEmail:From");
         }
 
-        public async Task SendAsync(string to, string subject, string htmlbody)
+        public async Task<bool> SendAsync(string to, string subject, string htmlbody)
         {
             var message = new EmailMessage(
                 senderAddress: _from,
@@ -33,7 +33,14 @@ namespace NewsHub.Infrastructure.Email
                 )
             );
 
-            await _client.SendAsync(Azure.WaitUntil.Completed, message);
+            var response = await _client.SendAsync(Azure.WaitUntil.Completed, message);
+
+            if (response.Value.Status != EmailSendStatus.Succeeded)
+            {
+                throw new Exception($"Email failed. Status: {response.Value.Status}");
+            }
+
+            return true;
         }
     }
 }

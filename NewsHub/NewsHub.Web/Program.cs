@@ -47,6 +47,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // CONFIGURATIONS APPLICATION
 // ======================================================
 
+var baseUrl = builder.Configuration["AppSettings:BaseUrl"];
+
+if (string.IsNullOrWhiteSpace(baseUrl))
+{
+    throw new InvalidOperationException("AppSettings:BaseUrl is not configured.");
+}
+
 builder.Services.Configure<AppSettings>(
     builder.Configuration.GetSection("AppSettings"));
 
@@ -99,6 +106,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+//using ( var scope = app.Services.CreateScope())
+//{
+//    var Db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//    Db.Database.Migrate();
+//}
 
 // ======================================================
 // GLOBAL EXCEPTION HANDLING

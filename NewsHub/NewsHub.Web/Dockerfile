@@ -1,63 +1,33 @@
-# =========================
-# Base runtime
-# =========================
+# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
 
-# =========================
-# Tailwind build stage
-# =========================
-FROM node:22-alpine AS tailwind
-WORKDIR /app
-
-COPY NewsHub.Web/package*.json ./
-RUN npm install
-
-COPY NewsHub.Web/ ./
-
-RUN chmod +x ./node_modules/.bin/tailwindcss
-
-RUN npx @tailwindcss/cli \
-    -i ./wwwroot/css/site.css \
-    -o ./wwwroot/css/output.css \
-    --minify
-
-
-# =========================
-# .NET build stage
-# =========================
+# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-
 COPY ["NewsHub.Web/NewsHub.Web.csproj", "NewsHub.Web/"]
 COPY ["NewsHub.Application/NewsHub.Application.csproj", "NewsHub.Application/"]
 COPY ["NewsHub.Domain/NewsHub.Domain.csproj", "NewsHub.Domain/"]
 COPY ["NewsHub.Infrastructure/NewsHub.Infrastructure.csproj", "NewsHub.Infrastructure/"]
-
-RUN dotnet restore "NewsHub.Web/NewsHub.Web.csproj"
-
+RUN dotnet restore "./NewsHub.Web/NewsHub.Web.csproj"
 COPY . .
-
 WORKDIR "/src/NewsHub.Web"
+RUN dotnet build "./NewsHub.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Copiar CSS compilado desde Tailwind
-COPY --from=tailwind /app/wwwroot/css/output.css ./wwwroot/css/output.css
+# This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./NewsHub.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-RUN dotnet publish "NewsHub.Web.csproj" \
-    -c $BUILD_CONFIGURATION \
-    -o /app/publish \
-    /p:UseAppHost=false
-
-
-# =========================
-# Final runtime
-# =========================
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
-
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "NewsHub.Web.dll"]

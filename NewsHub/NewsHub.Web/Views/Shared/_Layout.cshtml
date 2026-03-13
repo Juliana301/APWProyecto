@@ -19,15 +19,15 @@
     <!-- Navbar -->
     <nav class="sticky top-0 z-50 bg-white/80 dark:bg-surface-900/80 backdrop-blur-md border-b border-surface-200 dark:border-surface-700">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="index.html" class="flex items-center gap-2">
+            <a asp-controller="Home" asp-action="Index" class="flex items-center gap-2">
                 <div class="w-9 h-9 rounded-lg bg-brand-500 flex items-center justify-center">
                     <i data-lucide="rss" class="w-5 h-5 text-white"></i>
                 </div>
                 <span class="text-xl font-bold tracking-tight">NewsHub</span>
             </a>
             <div class="hidden md:flex items-center gap-8">
-                <a href="index.html" class="text-sm font-medium text-brand-600 dark:text-brand-400">Inicio</a>
-                <a href="dashboard.html" class="text-sm font-medium text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 transition-colors">Explorar</a>
+                <a asp-controller="Home" asp-action="Index" class="text-sm font-medium text-brand-600 dark:text-brand-400">Inicio</a>
+                <a asp-controller="News" asp-action="Index" class="text-sm font-medium text-surface-500 hover:text-surface-900 dark:hover:text-surface-100 transition-colors">Explorar</a>
             </div>
             <div class="flex items-center gap-3">
                 <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors" aria-label="Alternar modo oscuro">
@@ -46,7 +46,7 @@
         <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden md:hidden border-t border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 px-6 py-4 space-y-3">
             <a href="index.html" class="block text-sm font-medium text-brand-600 dark:text-brand-400">Inicio</a>
-            <a href="dashboard.html" class="block text-sm font-medium text-surface-500 hover:text-surface-900 dark:hover:text-surface-100">Explorar</a>
+            <a asp-controller="News" asp-action="Index" class="block text-sm font-medium text-surface-500 hover:text-surface-900 dark:hover:text-surface-100">Explorar</a>
             <a asp-controller="Authentication" asp-action="Login" class="block text-sm font-medium text-brand-600 dark:text-brand-400">Iniciar Sesion</a>
         </div>
     </nav>

@@ -1,0 +1,44 @@
+services:
+  newshub.web:
+    image: ${DOCKER_REGISTRY-}newshubweb
+    build:
+      context: .
+      dockerfile: NewsHub.Web/Dockerfile
+    ports:
+      - "8091:8080"
+    depends_on:
+      - sqlserver
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: >
+        Server=sqlserver,1433;
+        Database=NewsHub;
+        User Id=sa;
+        Password=${SA_PASSWORD};
+        TrustServerCertificate=True;
+    restart: on-failure
+    networks:
+      - newshub-network
+ 
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: newshub-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD}
+    ports:
+      - "1435:1433"
+    volumes:
+      - sqlvolume:/var/opt/mssql
+    networks:
+      - newshub-network
+
+networks:
+  newshub-network:
+    driver: bridge
+
+volumes:
+  sqlvolume:

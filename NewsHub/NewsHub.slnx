@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
   <Project Path="NewsHub.Application/NewsHub.Application.csproj" Id="e9388f5d-4ced-4d88-b66f-58889b99516e" />
   <Project Path="NewsHub.Domain/NewsHub.Domain.csproj" />
   <Project Path="NewsHub.Infrastructure/NewsHub.Infrastructure.csproj" />

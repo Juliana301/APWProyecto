@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NewsHub.Application.Common
 {
@@ -8,22 +6,26 @@ namespace NewsHub.Application.Common
     {
         public bool Success { get; }
         public bool IsFailure => !Success;
+
         public string? Error { get; }
+        public string? Message { get; }
         public T? Data { get; }
+
         public TypeMessage TypeMessage { get; }
 
-        private Result(bool success, T? data, string? error, TypeMessage typeMessage)
+        private Result(bool success, T? data, string? error, string? message, TypeMessage typeMessage)
         {
             Success = success;
             Data = data;
             Error = error;
+            Message = message;
             TypeMessage = typeMessage;
         }
 
-        public static Result<T> Ok(T data)
-            => new Result<T>(true, data, null, TypeMessage.Success);
+        public static Result<T> Ok(T data, string? message = null)
+            => new Result<T>(true, data, null, message, TypeMessage.Success);
 
-        public static Result<T> Fail(string error, TypeMessage type)
-            => new Result<T>(false, default, error, type);
+        public static Result<T> Fail(string error, TypeMessage type, string? message = null)
+            => new Result<T>(false, default, error, message, type);
     }
 }

@@ -34,12 +34,6 @@
         if (localStorage.getItem('darkMode') === 'true') {
           document.documentElement.classList.add('dark');
         }
-
-        function handleLogin(e) {
-          e.preventDefault();
-          localStorage.setItem('userName', document.getElementById('username').value || 'Usuario');
-          window.location.href = 'dashboard.html';
-        }
     </script>
 
     @await Html.PartialAsync("PartialViews/Pop_ups/_Toast")
