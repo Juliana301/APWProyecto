@@ -16,30 +16,21 @@ const savedItems = [
     { id: 102, source: 'HackerNews', type: 'widget', title: 'Rust supera a Python en el indice TIOBE por primera vez', description: 'El lenguaje de sistemas gana popularidad gracias a su seguridad de memoria y adopcion en proyectos de infraestructura critica.', date: '2026-02-09', tags: ['Desarrollo', 'Open Source'] },
 ];
 
+// ===== CHANGE TAB WITH URL =====
+const hash = window.location.hash.replace("#", "");
+
+if (hash) {
+    switchTab(hash);
+}
+
 // ===== INIT =====
 lucide.createIcons();
 if (localStorage.getItem('darkMode') === 'true') document.documentElement.classList.add('dark');
-
-//const userName = localStorage.getItem('userName') || 'Usuario';
-//document.getElementById('sidebar-username').textContent = "userName";
-//document.getElementById('sidebar-role').textContent = 'Conectado';
 
 renderFeed();
 renderSaved();
 
 // ===== FUNCTIONS =====
-function toggleDarkMode() {
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-    lucide.createIcons();
-}
-
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
-}
 
 function toggleAdminBar() {
     const content = document.getElementById('admin-content');
