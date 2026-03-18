@@ -35,6 +35,14 @@ namespace NewsHub.Domain.Entities
             CreatedAt = DateTime.UtcNow;
         }
 
+        public void AddRole(int roleId)
+        {
+            if (UserRoles.Any(ur => ur.RoleId == roleId))
+                return;
+
+            UserRoles.Add(new UserRole(this.Id, roleId));
+        }
+
         public void ChangePassword(string newPasswordHash)
         {
             PasswordHash = newPasswordHash;

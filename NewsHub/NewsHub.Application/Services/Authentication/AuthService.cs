@@ -5,6 +5,8 @@ using NewsHub.Application.DTOs.Authentication;
 using NewsHub.Application.DTOs.User;
 using NewsHub.Application.Interfaces.Authentication;
 using NewsHub.Application.Interfaces.Notifications;
+using NewsHub.Application.Interfaces.Persistence;
+using NewsHub.Application.Interfaces.Roles;
 using NewsHub.Application.Interfaces.Security;
 using NewsHub.Application.Interfaces.Tokens;
 using NewsHub.Domain.Entities;
@@ -15,30 +17,38 @@ namespace NewsHub.Application.Services.Authentication
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IUserRoleService _userRoleService;
         private readonly IPasswordHasherService _passwordHasher;
         private readonly IPasswordResetTokenService _passwordResetTokenService;
         private readonly IEmailSender _emailSender;
         private readonly AppSettings _appSettings;
+        private readonly IUnitOfWork _unitOfWork;
 
         public AuthService(
             IUserRepository userRepository,
+            IUserRoleService userRoleService,
             IPasswordHasherService passwordHasher,
             IPasswordResetTokenService passwordResetTokenService,
             IEmailSender emailSender,
-            IOptionsMonitor<AppSettings> appSettings
+            IOptionsMonitor<AppSettings> appSettings,
+            IUnitOfWork unitOfWork
         )
         {
             _userRepository = userRepository;
+            _userRoleService = userRoleService;
             _passwordHasher = passwordHasher;
             _passwordResetTokenService = passwordResetTokenService;
             _emailSender = emailSender;
             _appSettings = appSettings.CurrentValue;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<bool>> RegisterAsync(RegisterDto dto)
         {
             try
             {
+                await _unitOfWork.BeginTransactionAsync();
+
                 var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
                 if (existingUser != null)
                     return Result<bool>.Fail("El email ya está registrado.", TypeMessage.Warning);
@@ -59,10 +69,22 @@ namespace NewsHub.Application.Services.Authentication
 
                 await _userRepository.AddAsync(user);
 
+                var roleResult = await _userRoleService.AddUserRoleAsync(user.Id, new[] { "User" });
+
+                if (!roleResult.Success)
+                {
+                    await _unitOfWork.RollbackAsync();
+                    return roleResult;
+                }
+
+                await _unitOfWork.CommitAsync();
+
                 return Result<bool>.Ok(true, "Usuario registrado correctamente.");
             }
             catch (Exception ex)
             {
+                await _unitOfWork.RollbackAsync();
+
                 return Result<bool>.Fail(
                     $"Error registrando usuario: {ex.Message}",
                     TypeMessage.Error
@@ -88,6 +110,7 @@ namespace NewsHub.Application.Services.Authentication
                     return Result<UserDto>.Fail("Usuario o contraseña incorrectos.", TypeMessage.Warning);
 
                 user.UpdateLastLogin();
+
                 await _userRepository.UpdateAsync(user);
 
                 var dtoUser = new UserDto
@@ -128,42 +151,19 @@ namespace NewsHub.Application.Services.Authentication
                     return Result<bool>.Fail("No se pudo generar el token.", TypeMessage.Error);
 
                 var token = tokenResult.Data!.Token;
-
                 var resetLink = $"{_appSettings.BaseUrl}/Authentication/ResetPassword?token={token}";
 
-                string html;
-
-                try
-                {
-                    html = LoadEmailTemplate("RecoverPasswordEmail.html");
-                }
-                catch (Exception ex)
-                {
-                    return Result<bool>.Fail(
-                        $"Error cargando template de correo: {ex.Message}",
-                        TypeMessage.Error
-                    );
-                }
+                var html = LoadEmailTemplate("RecoverPasswordEmail.html");
 
                 html = html.Replace("{{USER_NAME}}", user.FirstName);
                 html = html.Replace("{{RESET_LINK}}", resetLink);
                 html = html.Replace("{{EXPIRES_AT}}", tokenResult.Data.ExpiresAt.ToString());
 
-                try
-                {
-                    await _emailSender.SendAsync(
-                        user.Email,
-                        "Reset your password",
-                        html
-                    );
-                }
-                catch (Exception ex)
-                {
-                    return Result<bool>.Fail(
-                        $"Error enviando correo: {ex.Message}",
-                        TypeMessage.Error
-                    );
-                }
+                await _emailSender.SendAsync(
+                    user.Email,
+                    "Reset your password",
+                    html
+                );
 
                 return Result<bool>.Ok(true, "Correo de recuperación enviado.");
             }
@@ -180,13 +180,14 @@ namespace NewsHub.Application.Services.Authentication
         {
             try
             {
+                await _unitOfWork.BeginTransactionAsync();
+
                 var tokenResult = await _passwordResetTokenService.ValidateTokenAsync(dto.Token);
 
                 if (!tokenResult.Success)
                     return Result<bool>.Fail(tokenResult.Error!, tokenResult.TypeMessage);
 
                 var token = tokenResult.Data!;
-
                 var user = await _userRepository.GetByIdAsync(token.UserId);
 
                 if (user == null)
@@ -196,14 +197,16 @@ namespace NewsHub.Application.Services.Authentication
 
                 user.ChangePassword(newHash);
 
-                await _userRepository.UpdateAsync(user);
-
                 await _passwordResetTokenService.MarkTokenAsUsedAsync(token);
+
+                await _unitOfWork.CommitAsync();
 
                 return Result<bool>.Ok(true, "Contraseña actualizada correctamente.");
             }
             catch (Exception ex)
             {
+                await _unitOfWork.RollbackAsync();
+
                 return Result<bool>.Fail(
                     $"Error restableciendo contraseña: {ex.Message}",
                     TypeMessage.Error

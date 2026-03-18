@@ -25,7 +25,11 @@ namespace NewsHub.Infrastructure.Repositories
 
         public async Task<User?> GetByUserNameAsync(string userName)
         {
-            return await FirstAsync(u => u.UserName == userName);
+            return await FirstAsync(
+                u => u.UserName == userName,
+                include: query => query
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role));
         }
     }
 }

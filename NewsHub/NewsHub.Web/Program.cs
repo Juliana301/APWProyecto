@@ -3,9 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using NewsHub.Application.Configuration;
 using NewsHub.Application.Interfaces.Authentication;
 using NewsHub.Application.Interfaces.Notifications;
+using NewsHub.Application.Interfaces.Persistence;
+using NewsHub.Application.Interfaces.Roles;
 using NewsHub.Application.Interfaces.Security;
 using NewsHub.Application.Interfaces.Tokens;
 using NewsHub.Application.Services.Authentication;
+using NewsHub.Application.Services.Roles;
 using NewsHub.Application.Services.Tokens;
 using NewsHub.Domain.Interfaces.Repositories;
 using NewsHub.Domain.Interfaces.Repositories.ErrorCatch;
@@ -43,6 +46,8 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 // ======================================================
 // CONFIGURATIONS APPLICATION
 // ======================================================
@@ -63,6 +68,10 @@ builder.Services.Configure<AppSettings>(
 
 builder.Services.AddScoped<ILogErrorRepository, LogErrorRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 // ======================================================
@@ -70,6 +79,7 @@ builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepo
 // ======================================================
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 builder.Services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService>();
 
@@ -107,11 +117,16 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-//using ( var scope = app.Services.CreateScope())
-//{
-//    var Db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//    Db.Database.Migrate();
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var provider = scope.ServiceProvider;
+
+    // aplicar migraciones (opcional)
+    //var db = provider.GetRequiredService<ApplicationDbContext>();
+    //db.Database.Migrate();
+
+    await SeedData.EnsureRolesAsync(provider);
+}
 
 // ======================================================
 // GLOBAL EXCEPTION HANDLING

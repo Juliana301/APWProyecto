@@ -1,9 +1,11 @@
-﻿@*
+﻿@using System.Security.Claims
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
     Layout = "~/Views/Shared/_LayoutNews.cshtml";
     ViewData["Title"] = "Dashboard";
+    var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "Sin rol";
 }
 
 @section Styles {
@@ -28,84 +30,87 @@
     </div>
 </header>
 
-<!-- Admin: Manage Sources Bar -->
-<div id="admin-bar" class="bg-white dark:bg-surface-900 border-b border-surface-200 dark:border-surface-700">
-    <button onclick="toggleAdminBar()" class="w-full flex items-center justify-between px-6 py-3 text-sm font-medium text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
-        <span class="flex items-center gap-2">
-            <i data-lucide="shield" class="w-4 h-4 text-brand-500"></i>
-            Gestionar Fuentes (Admin)
-        </span>
-        <i data-lucide="chevron-down" id="admin-chevron" class="w-4 h-4 transition-transform"></i>
-    </button>
-    <div id="admin-content" class="hidden px-6 pb-5">
-        <!-- Add source form -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-4">
-            <input type="url" placeholder="URL de la fuente" class="lg:col-span-2 px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-            <input type="text" placeholder="Nombre" class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-            <input type="text" placeholder="Descripcion" class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
-            <select class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                <option value="api">API</option>
-                <option value="feed">Feed RSS</option>
-                <option value="widget">Widget</option>
-            </select>
-            <div class="flex items-center gap-3">
-                <label class="flex items-center gap-1.5 text-xs text-surface-500">
-                    <input type="checkbox" class="rounded border-surface-300 text-brand-500 focus:ring-brand-500" />
-                    Secret
-                </label>
-                <button class="flex-1 px-3 py-2 text-sm font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors">
-                    Agregar
-                </button>
+@if (role == "Admin")
+{
+    <!-- Admin: Manage Sources Bar -->
+    <div id="admin-bar" class="bg-white dark:bg-surface-900 border-b border-surface-200 dark:border-surface-700">
+        <button onclick="toggleAdminBar()" class="w-full flex items-center justify-between px-6 py-3 text-sm font-medium text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-800/50 transition-colors">
+            <span class="flex items-center gap-2">
+                <i data-lucide="shield" class="w-4 h-4 text-brand-500"></i>
+                Gestionar Fuentes (Admin)
+            </span>
+            <i data-lucide="chevron-down" id="admin-chevron" class="w-4 h-4 transition-transform"></i>
+        </button>
+        <div id="admin-content" class="hidden px-6 pb-5">
+            <!-- Add source form -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-4">
+                <input type="url" placeholder="URL de la fuente" class="lg:col-span-2 px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                <input type="text" placeholder="Nombre" class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                <input type="text" placeholder="Descripcion" class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                <select class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="api">API</option>
+                    <option value="feed">Feed RSS</option>
+                    <option value="widget">Widget</option>
+                </select>
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-1.5 text-xs text-surface-500">
+                        <input type="checkbox" class="rounded border-surface-300 text-brand-500 focus:ring-brand-500" />
+                        Secret
+                    </label>
+                    <button class="flex-1 px-3 py-2 text-sm font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors">
+                        Agregar
+                    </button>
+                </div>
+            </div>
+            <!-- Sources table -->
+            <div class="overflow-x-auto rounded-xl border border-surface-200 dark:border-surface-700">
+                <table class="w-full text-sm">
+                    <thead class="bg-surface-50 dark:bg-surface-800 text-surface-500 dark:text-surface-400">
+                        <tr>
+                            <th class="px-4 py-2.5 text-left font-medium">Nombre</th>
+                            <th class="px-4 py-2.5 text-left font-medium hidden sm:table-cell">URL</th>
+                            <th class="px-4 py-2.5 text-left font-medium">Tipo</th>
+                            <th class="px-4 py-2.5 text-left font-medium hidden md:table-cell">Secret</th>
+                            <th class="px-4 py-2.5 text-right font-medium">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-200 dark:divide-surface-700">
+                        <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/50">
+                            <td class="px-4 py-3 font-medium">NewsAPI</td>
+                            <td class="px-4 py-3 text-surface-500 hidden sm:table-cell truncate max-w-[200px]">https://newsapi.org/v2/top-headlines</td>
+                            <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">API</span></td>
+                            <td class="px-4 py-3 hidden md:table-cell"><i data-lucide="check" class="w-4 h-4 text-green-500"></i></td>
+                            <td class="px-4 py-3 text-right">
+                                <button class="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-surface-400 hover:text-surface-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                <button class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-surface-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/50">
+                            <td class="px-4 py-3 font-medium">TechCrunch RSS</td>
+                            <td class="px-4 py-3 text-surface-500 hidden sm:table-cell truncate max-w-[200px]">https://techcrunch.com/feed/</td>
+                            <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Feed</span></td>
+                            <td class="px-4 py-3 hidden md:table-cell"><i data-lucide="x" class="w-4 h-4 text-surface-300"></i></td>
+                            <td class="px-4 py-3 text-right">
+                                <button class="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-surface-400 hover:text-surface-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                <button class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-surface-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/50">
+                            <td class="px-4 py-3 font-medium">HackerNews</td>
+                            <td class="px-4 py-3 text-surface-500 hidden sm:table-cell truncate max-w-[200px]">https://hacker-news.firebaseio.com/v0</td>
+                            <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">Widget</span></td>
+                            <td class="px-4 py-3 hidden md:table-cell"><i data-lucide="x" class="w-4 h-4 text-surface-300"></i></td>
+                            <td class="px-4 py-3 text-right">
+                                <button class="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-surface-400 hover:text-surface-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                <button class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-surface-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <!-- Sources table -->
-        <div class="overflow-x-auto rounded-xl border border-surface-200 dark:border-surface-700">
-            <table class="w-full text-sm">
-                <thead class="bg-surface-50 dark:bg-surface-800 text-surface-500 dark:text-surface-400">
-                    <tr>
-                        <th class="px-4 py-2.5 text-left font-medium">Nombre</th>
-                        <th class="px-4 py-2.5 text-left font-medium hidden sm:table-cell">URL</th>
-                        <th class="px-4 py-2.5 text-left font-medium">Tipo</th>
-                        <th class="px-4 py-2.5 text-left font-medium hidden md:table-cell">Secret</th>
-                        <th class="px-4 py-2.5 text-right font-medium">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-surface-200 dark:divide-surface-700">
-                    <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/50">
-                        <td class="px-4 py-3 font-medium">NewsAPI</td>
-                        <td class="px-4 py-3 text-surface-500 hidden sm:table-cell truncate max-w-[200px]">https://newsapi.org/v2/top-headlines</td>
-                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">API</span></td>
-                        <td class="px-4 py-3 hidden md:table-cell"><i data-lucide="check" class="w-4 h-4 text-green-500"></i></td>
-                        <td class="px-4 py-3 text-right">
-                            <button class="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-surface-400 hover:text-surface-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                            <button class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-surface-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/50">
-                        <td class="px-4 py-3 font-medium">TechCrunch RSS</td>
-                        <td class="px-4 py-3 text-surface-500 hidden sm:table-cell truncate max-w-[200px]">https://techcrunch.com/feed/</td>
-                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Feed</span></td>
-                        <td class="px-4 py-3 hidden md:table-cell"><i data-lucide="x" class="w-4 h-4 text-surface-300"></i></td>
-                        <td class="px-4 py-3 text-right">
-                            <button class="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-surface-400 hover:text-surface-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                            <button class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-surface-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/50">
-                        <td class="px-4 py-3 font-medium">HackerNews</td>
-                        <td class="px-4 py-3 text-surface-500 hidden sm:table-cell truncate max-w-[200px]">https://hacker-news.firebaseio.com/v0</td>
-                        <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300">Widget</span></td>
-                        <td class="px-4 py-3 hidden md:table-cell"><i data-lucide="x" class="w-4 h-4 text-surface-300"></i></td>
-                        <td class="px-4 py-3 text-right">
-                            <button class="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-surface-400 hover:text-surface-600"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                            <button class="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-surface-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
     </div>
-</div>
+}
 
 
 <!-- Main content area -->
