@@ -1,15 +1,44 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewsHub.Application.Interfaces.Services;
+using NewsHub.Web.ViewModels.Dashboard;
+using NewsHub.Web.ViewModels.Source;
 
 namespace NewsHub.Web.Controllers
 {
     public class NewsController : Controller
     {
+        private readonly ISourceService _sourceService;
+
+        public NewsController(
+            ISourceService sourceService
+            )
+        {
+            _sourceService = sourceService;
+        }
+
         [HttpGet]
         [Authorize]
-        public IActionResult Index(string search)
+        public async Task<IActionResult> Index(string search)
         {
-            return View();
+            var result = await _sourceService.GetAllAsync();
+
+            var vm = new DashboardViewModel();
+
+            if (result.Success && result.Data != null)
+            {
+                vm.Sources = result.Data.Select(s => new SourceViewModel
+                {
+                    Id = s.Id,
+                    Url = s.Url,
+                    Name = s.Name,
+                    Description = s.Description,
+                    ComponentType = s.ComponentType,
+                    RequiresSecret = s.RequiresSecret
+                }).ToList();
+            }
+
+            return View(vm);
         }
 
         [HttpGet]

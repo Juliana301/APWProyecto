@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NewsHub.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
@@ -13,7 +14,7 @@ namespace NewsHub.Domain.Entities
         public string Name { get; private set; } = null!;
         public string? Description { get; private set; }
 
-        public string ComponentType { get; private set; } = null!;
+        public SourceType ComponentType { get; private set; }
         public bool RequiresSecret { get; private set; }
 
         public ICollection<SourceItem> Items { get; private set; } = new List<SourceItem>();
@@ -21,7 +22,16 @@ namespace NewsHub.Domain.Entities
 
         private Source() { }
 
-        public Source(string url, string name, string componentType, bool requiresSecret, string? description = null)
+        public Source(string url, string name, SourceType componentType, bool requiresSecret, string? description = null)
+        {
+            Url = url;
+            Name = name;
+            ComponentType = componentType;
+            RequiresSecret = requiresSecret;
+            Description = description;
+        }
+
+        public void Update(string url, string name, SourceType componentType, bool requiresSecret, string? description = null)
         {
             Url = url;
             Name = name;

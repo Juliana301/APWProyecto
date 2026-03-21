@@ -28,8 +28,7 @@ namespace NewsHub.Infrastructure.Data.Configurations
                 .HasMaxLength(500);
 
             builder.Property(x => x.ComponentType)
-                .IsRequired()
-                .HasMaxLength(100);
+                .HasConversion<string>();
 
             builder.Property(x => x.RequiresSecret)
                 .IsRequired()

@@ -6,9 +6,11 @@ using NewsHub.Application.Interfaces.Notifications;
 using NewsHub.Application.Interfaces.Persistence;
 using NewsHub.Application.Interfaces.Roles;
 using NewsHub.Application.Interfaces.Security;
+using NewsHub.Application.Interfaces.Services;
 using NewsHub.Application.Interfaces.Tokens;
 using NewsHub.Application.Services.Authentication;
 using NewsHub.Application.Services.Roles;
+using NewsHub.Application.Services.Source;
 using NewsHub.Application.Services.Tokens;
 using NewsHub.Domain.Interfaces.Repositories;
 using NewsHub.Domain.Interfaces.Repositories.ErrorCatch;
@@ -22,6 +24,7 @@ using NewsHub.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // ======================================================
 // LOGGING
 // ======================================================
@@ -30,37 +33,44 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
+
 // ======================================================
-// DATABASE
+// DATABASE (Infrastructure)
 // ======================================================
+
+DotNetEnv.Env.Load();
+
+builder.Configuration
+    .AddEnvironmentVariables();
 
 var connectionString =
     Environment.GetEnvironmentVariable("NewsHub_DB_Connection")
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(connectionString))
-{
     throw new InvalidOperationException("Database connection string is not configured.");
-}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+
 // ======================================================
-// CONFIGURATIONS APPLICATION
+// CONFIGURATIONS (Application Settings)
 // ======================================================
 
 var baseUrl = builder.Configuration["AppSettings:BaseUrl"];
 
 if (string.IsNullOrWhiteSpace(baseUrl))
-{
     throw new InvalidOperationException("AppSettings:BaseUrl is not configured.");
-}
 
 builder.Services.Configure<AppSettings>(
     builder.Configuration.GetSection("AppSettings"));
+
+builder.Services.Configure<AzureEmailOptions>(
+    builder.Configuration.GetSection("AzureEmail"));
+
 
 // ======================================================
 // REPOSITORIES (Infrastructure Layer)
@@ -69,28 +79,40 @@ builder.Services.Configure<AppSettings>(
 builder.Services.AddScoped<ILogErrorRepository, LogErrorRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
-
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-
+builder.Services.AddScoped<ISourceRepository, SourceRepository>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
+
 // ======================================================
-// APPLICATION / SECURITY SERVICES
+// APPLICATION SERVICES (Business Logic)
 // ======================================================
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();
-builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
+builder.Services.AddScoped<ISourceService, SourceService>();
 builder.Services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService>();
 
+
 // ======================================================
-// EMAIL SERVICE
+// PARSERS
 // ======================================================
 
-builder.Services.Configure<AzureEmailOptions>(
-    builder.Configuration.GetSection("AzureEmail"));
+
+
+// ======================================================
+// SECURITY SERVICES
+// ======================================================
+
+builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
+
+
+// ======================================================
+// EXTERNAL SERVICES (Email, etc.)
+// ======================================================
 
 builder.Services.AddScoped<IEmailSender, AzureEmailSender>();
+
 
 // ======================================================
 // AUTHENTICATION
@@ -107,6 +129,7 @@ builder.Services
         options.SlidingExpiration = true;
     });
 
+
 // ======================================================
 // MVC + API
 // ======================================================
@@ -117,16 +140,21 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+
+// ======================================================
+// SEED DATA
+// ======================================================
+
 using (var scope = app.Services.CreateScope())
 {
     var provider = scope.ServiceProvider;
 
-    // aplicar migraciones (opcional)
-    //var db = provider.GetRequiredService<ApplicationDbContext>();
-    //db.Database.Migrate();
+    // var db = provider.GetRequiredService<ApplicationDbContext>();
+    // db.Database.Migrate();
 
     await SeedData.EnsureRolesAsync(provider);
 }
+
 
 // ======================================================
 // GLOBAL EXCEPTION HANDLING
@@ -146,8 +174,9 @@ TaskScheduler.UnobservedTaskException += (sender, eventArgs) =>
     eventArgs.SetObserved();
 };
 
+
 // ======================================================
-// MIDDLEWARE PIPELINE
+// MIDDLEWARE PIPELINE (Web Layer)
 // ======================================================
 
 if (app.Environment.IsDevelopment())
@@ -169,6 +198,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 // ======================================================
 // ENDPOINTS

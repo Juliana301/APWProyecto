@@ -185,7 +185,7 @@ namespace NewsHub.Infrastructure.Repositories
             try
             {
                 await _dbSet.AddAsync(entity);
-                await _context.SaveChangesAsync();
+                //await _context.SaveChangesAsync();
 
                 return entity;
             }
