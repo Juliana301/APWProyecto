@@ -7,9 +7,9 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Data.Configurations
 {
-    public class LogConfiguration : IEntityTypeConfiguration<Log>
+    public class LogConfiguration : IEntityTypeConfiguration<LogEnt>
     {
-        public void Configure(EntityTypeBuilder<Log> builder)
+        public void Configure(EntityTypeBuilder<LogEnt> builder)
         {
             builder.ToTable("Logs");
 

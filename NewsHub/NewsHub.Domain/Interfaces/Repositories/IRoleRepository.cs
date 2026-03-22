@@ -6,8 +6,8 @@ using System.Text;
 
 namespace NewsHub.Application.Interfaces.Roles
 {
-    public interface IRoleRepository : IGenericRepository<Role>
+    public interface IRoleRepository : IGenericRepository<RoleEnt>
     {
-        Task<Role?> GetByNameAsync(string name);
+        Task<RoleEnt?> GetByNameAsync(string name);
     }
 }

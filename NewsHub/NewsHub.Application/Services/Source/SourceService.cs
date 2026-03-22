@@ -28,7 +28,7 @@ namespace NewsHub.Application.Services.Source
                 if (exists)
                     return Result<SourceDto>.Fail("La fuente ya existe.", TypeMessage.Warning);
 
-                var entity = new Domain.Entities.Source(dto.Url, dto.Name, dto.ComponentType, dto.RequiresSecret, dto.Description);
+                var entity = new SourceEnt(dto.Url, dto.Name, dto.ComponentType, dto.RequiresSecret, dto.Description);
 
                 var added = await _sourceRepository.AddAsync(entity);
 

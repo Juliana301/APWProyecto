@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
-    public class PasswordResetToken
+    public class PasswordResetTokenEnt
     {
         public int Id { get; private set; }
 
@@ -17,11 +17,11 @@ namespace NewsHub.Domain.Entities
 
         public bool Used { get; private set; }
 
-        public User User { get; private set; } = null!;
+        public UserEnt User { get; private set; } = null!;
 
-        private PasswordResetToken() { } // EF
+        private PasswordResetTokenEnt() { } // EF
 
-        public PasswordResetToken(int userId, string token, DateTime expiresAt)
+        public PasswordResetTokenEnt(int userId, string token, DateTime expiresAt)
         {
             UserId = userId;
             Token = token;

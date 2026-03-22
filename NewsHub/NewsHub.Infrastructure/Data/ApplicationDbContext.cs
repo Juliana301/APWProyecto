@@ -16,18 +16,18 @@ namespace NewsHub.Infrastructure.Data
 
         #region DbSets
 
-        public DbSet<User> Users => Set<User>();
-        public DbSet<Role> Roles => Set<Role>();
-        public DbSet<UserRole> UserRoles => Set<UserRole>();
+        public DbSet<UserEnt> Users => Set<UserEnt>();
+        public DbSet<RoleEnt> Roles => Set<RoleEnt>();
+        public DbSet<UserRoleEnt> UserRoles => Set<UserRoleEnt>();
 
-        public DbSet<Source> Sources => Set<Source>();
-        public DbSet<SourceItem> SourceItems => Set<SourceItem>();
-        public DbSet<Secret> Secrets => Set<Secret>();
+        public DbSet<SourceEnt> Sources => Set<SourceEnt>();
+        public DbSet<SourceItemEnt> SourceItems => Set<SourceItemEnt>();
+        public DbSet<SecretEnt> Secrets => Set<SecretEnt>();
 
-        public DbSet<Log> Logs => Set<Log>();
-        public DbSet<ImportHistory> ImportHistories => Set<ImportHistory>();
+        public DbSet<LogEnt> Logs => Set<LogEnt>();
+        public DbSet<ImportHistoryEnt> ImportHistories => Set<ImportHistoryEnt>();
         
-        public DbSet<LogError> LogErrors => Set<LogError>();
+        public DbSet<LogErrorEnt> LogErrors => Set<LogErrorEnt>();
 
         #endregion
 

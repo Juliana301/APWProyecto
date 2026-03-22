@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
-    public class Log
+    public class LogEnt
     {
         public int Id { get; private set; }
 
@@ -16,11 +16,11 @@ namespace NewsHub.Domain.Entities
 
         public DateTime CreatedAt { get; private set; }
 
-        public User? User { get; private set; }
+        public UserEnt? User { get; private set; }
 
-        private Log() { }
+        private LogEnt() { }
 
-        public Log(string action, string? entity = null, int? entityId = null, int? userId = null)
+        public LogEnt(string action, string? entity = null, int? entityId = null, int? userId = null)
         {
             Action = action;
             Entity = entity;

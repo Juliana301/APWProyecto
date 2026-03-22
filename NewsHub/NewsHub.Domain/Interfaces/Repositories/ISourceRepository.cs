@@ -2,8 +2,8 @@ using NewsHub.Domain.Entities;
 
 namespace NewsHub.Domain.Interfaces.Repositories
 {
-    public interface ISourceRepository : IGenericRepository<Source>
+    public interface ISourceRepository : IGenericRepository<SourceEnt>
     {
-        Task<Source?> GetByUrlAsync(string url);
+        Task<SourceEnt?> GetByUrlAsync(string url);
     }
 }

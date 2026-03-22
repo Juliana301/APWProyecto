@@ -9,7 +9,7 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Repositories.Tokens
 {
-    public class PasswordResetTokenRepository : GenericRepository<PasswordResetToken>, IPasswordResetTokenRepository
+    public class PasswordResetTokenRepository : GenericRepository<PasswordResetTokenEnt>, IPasswordResetTokenRepository
     {
         public PasswordResetTokenRepository(
             ApplicationDbContext context, 

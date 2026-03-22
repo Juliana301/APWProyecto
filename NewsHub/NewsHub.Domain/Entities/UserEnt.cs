@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NewsHub.Domain.Entities
 {
-    public class User
+    public class UserEnt
     {
         public int Id { get; private set; }
 
@@ -19,12 +19,12 @@ namespace NewsHub.Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public DateTime? LastLoginAt { get; private set; }
 
-        public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
-        public ICollection<PasswordResetToken> PasswordResetTokens { get; private set; } = new List<PasswordResetToken>();
+        public ICollection<UserRoleEnt> UserRoles { get; private set; } = new List<UserRoleEnt>();
+        public ICollection<PasswordResetTokenEnt> PasswordResetTokens { get; private set; } = new List<PasswordResetTokenEnt>();
         
-        private User() { } // EF
+        private UserEnt() { } // EF
 
-        public User(string email, string userName, string passwordHash, string firstName, string lastName)
+        public UserEnt(string email, string userName, string passwordHash, string firstName, string lastName)
         {
             Email = email;
             UserName = userName;
@@ -40,7 +40,7 @@ namespace NewsHub.Domain.Entities
             if (UserRoles.Any(ur => ur.RoleId == roleId))
                 return;
 
-            UserRoles.Add(new UserRole(this.Id, roleId));
+            UserRoles.Add(new UserRoleEnt(this.Id, roleId));
         }
 
         public void ChangePassword(string newPasswordHash)

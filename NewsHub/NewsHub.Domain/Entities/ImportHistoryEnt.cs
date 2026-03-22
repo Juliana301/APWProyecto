@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
-    public class ImportHistory
+    public class ImportHistoryEnt
     {
         public int Id { get; private set; }
 
@@ -16,9 +16,9 @@ namespace NewsHub.Domain.Entities
 
         public DateTime ImportedAt { get; private set; }
 
-        private ImportHistory() { }
+        private ImportHistoryEnt() { }
 
-        public ImportHistory(string? sourceName, int itemsImported, bool success, string? errorMessage = null)
+        public ImportHistoryEnt(string? sourceName, int itemsImported, bool success, string? errorMessage = null)
         {
             SourceName = sourceName;
             ItemsImported = itemsImported;

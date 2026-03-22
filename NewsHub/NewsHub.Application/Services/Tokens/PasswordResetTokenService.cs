@@ -26,7 +26,7 @@ namespace NewsHub.Application.Services.Tokens
 
             var expiresAt = DateTime.UtcNow.AddMinutes(30);
 
-            var token = new PasswordResetToken(userId, tokenValue, expiresAt);
+            var token = new PasswordResetTokenEnt(userId, tokenValue, expiresAt);
 
             await _passwordResetTokenRepository.AddAsync(token);
 
@@ -37,25 +37,25 @@ namespace NewsHub.Application.Services.Tokens
             });
         }
 
-        public async Task MarkTokenAsUsedAsync(PasswordResetToken token)
+        public async Task MarkTokenAsUsedAsync(PasswordResetTokenEnt token)
         {
             token.MarkAsUsed();
             await _passwordResetTokenRepository.UpdateAsync(token);
         }
 
-        public async Task<Result<PasswordResetToken>> ValidateTokenAsync(string tokenValue)
+        public async Task<Result<PasswordResetTokenEnt>> ValidateTokenAsync(string tokenValue)
         {
             var token = await _passwordResetTokenRepository.FirstAsync(
                 t => t.Token == tokenValue
             );
 
             if (token == null)
-                return Result<PasswordResetToken>.Fail("Token inválido.", TypeMessage.Error);
+                return Result<PasswordResetTokenEnt>.Fail("Token inválido.", TypeMessage.Error);
 
             if (!token.IsValid())
-                return Result<PasswordResetToken>.Fail("El token ha expirado o ya fue usado.", TypeMessage.Warning);
+                return Result<PasswordResetTokenEnt>.Fail("El token ha expirado o ya fue usado.", TypeMessage.Warning);
 
-            return Result<PasswordResetToken>.Ok(token);
+            return Result<PasswordResetTokenEnt>.Ok(token);
         }
     }
 }

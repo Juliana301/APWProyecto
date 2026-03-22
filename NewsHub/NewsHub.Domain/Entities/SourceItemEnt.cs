@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
-    public class SourceItem
+    public class SourceItemEnt
     {
         public int Id { get; private set; }
 
@@ -13,11 +13,11 @@ namespace NewsHub.Domain.Entities
 
         public DateTime? CreatedAt { get; private set; }
 
-        public Source? Source { get; private set; }
+        public SourceEnt? Source { get; private set; }
 
-        private SourceItem() { }
+        private SourceItemEnt() { }
 
-        public SourceItem(int? sourceId, string? json)
+        public SourceItemEnt(int? sourceId, string? json)
         {
             SourceId = sourceId;
             Json = json;

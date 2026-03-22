@@ -7,9 +7,9 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Data.Configurations
 {
-    public class SecretConfiguration : IEntityTypeConfiguration<Secret>
+    public class SecretConfiguration : IEntityTypeConfiguration<SecretEnt>
     {
-        public void Configure(EntityTypeBuilder<Secret> builder)
+        public void Configure(EntityTypeBuilder<SecretEnt> builder)
         {
             builder.ToTable("Secrets");
 

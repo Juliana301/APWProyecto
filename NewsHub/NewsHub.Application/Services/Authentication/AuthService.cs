@@ -59,7 +59,7 @@ namespace NewsHub.Application.Services.Authentication
 
                 var hash = _passwordHasher.HashPassword(dto.Password);
 
-                var user = new User(
+                var user = new UserEnt(
                     dto.Email,
                     dto.UserName,
                     hash,

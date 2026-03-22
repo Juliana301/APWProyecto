@@ -8,7 +8,7 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Repositories
 {
-    public class RoleRepository : GenericRepository<Role>, IRoleRepository
+    public class RoleRepository : GenericRepository<RoleEnt>, IRoleRepository
     {
         public RoleRepository(
             ApplicationDbContext context, 
@@ -16,7 +16,7 @@ namespace NewsHub.Infrastructure.Repositories
         {
         }
 
-        public async Task<Role?> GetByNameAsync(string name)
+        public async Task<RoleEnt?> GetByNameAsync(string name)
         {
             return await _context.Roles.FindAsync(name);
         }

@@ -7,9 +7,9 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Data.Configurations
 {
-    public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<PasswordResetToken>
+    public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<PasswordResetTokenEnt>
     {
-        public void Configure(EntityTypeBuilder<PasswordResetToken> builder)
+        public void Configure(EntityTypeBuilder<PasswordResetTokenEnt> builder)
         {
             builder.ToTable("PasswordResetTokens");
 

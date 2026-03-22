@@ -5,7 +5,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Interfaces.Repositories
 {
-    public interface IUserRoleRepository : IGenericRepository<UserRole>
+    public interface IUserRoleRepository : IGenericRepository<UserRoleEnt>
     {
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities.CatchError
 {
-    public class LogError
+    public class LogErrorEnt
     {
         public int Id { get; private set; }
 
@@ -15,9 +15,9 @@ namespace NewsHub.Domain.Entities.CatchError
 
         public DateTime CreatedAt { get; private set; }
 
-        private LogError() { } // EF
+        private LogErrorEnt() { } // EF
 
-        public LogError(string origin, string message, string? innerException, string? stackTrace)
+        public LogErrorEnt(string origin, string message, string? innerException, string? stackTrace)
         {
             Origin = origin;
             Message = message;

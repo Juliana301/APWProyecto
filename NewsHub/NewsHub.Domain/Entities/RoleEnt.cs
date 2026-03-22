@@ -4,17 +4,17 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
-    public class Role
+    public class RoleEnt
     {
         public int Id { get; private set; }
 
         public string Name { get; private set; } = null!;
 
-        public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
+        public ICollection<UserRoleEnt> UserRoles { get; private set; } = new List<UserRoleEnt>();
 
-        private Role() { }
+        private RoleEnt() { }
 
-        public Role(string name)
+        public RoleEnt(string name)
         {
             Name = name;
         }

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
-    public class Source
+    public class SourceEnt
     {
         public int Id { get; private set; }
 
@@ -17,12 +17,12 @@ namespace NewsHub.Domain.Entities
         public SourceType ComponentType { get; private set; }
         public bool RequiresSecret { get; private set; }
 
-        public ICollection<SourceItem> Items { get; private set; } = new List<SourceItem>();
-        public ICollection<Secret> Secrets { get; private set; } = new List<Secret>();
+        public ICollection<SourceItemEnt> Items { get; private set; } = new List<SourceItemEnt>();
+        public ICollection<SecretEnt> Secrets { get; private set; } = new List<SecretEnt>();
 
-        private Source() { }
+        private SourceEnt() { }
 
-        public Source(string url, string name, SourceType componentType, bool requiresSecret, string? description = null)
+        public SourceEnt(string url, string name, SourceType componentType, bool requiresSecret, string? description = null)
         {
             Url = url;
             Name = name;

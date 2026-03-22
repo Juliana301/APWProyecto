@@ -9,7 +9,7 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Repositories
 {
-    public class UserRoleRepository : GenericRepository<UserRole>, IUserRoleRepository
+    public class UserRoleRepository : GenericRepository<UserRoleEnt>, IUserRoleRepository
     {
         public UserRoleRepository(
             ApplicationDbContext context,

@@ -7,9 +7,9 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Data.Configurations
 {
-    public class SourceConfiguration : IEntityTypeConfiguration<Source>
+    public class SourceConfiguration : IEntityTypeConfiguration<SourceEnt>
     {
-        public void Configure(EntityTypeBuilder<Source> builder)
+        public void Configure(EntityTypeBuilder<SourceEnt> builder)
         {
             builder.ToTable("Source");
 

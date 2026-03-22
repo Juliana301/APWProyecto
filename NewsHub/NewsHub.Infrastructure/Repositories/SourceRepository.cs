@@ -6,13 +6,13 @@ using NewsHub.Infrastructure.Data;
 
 namespace NewsHub.Infrastructure.Repositories
 {
-    public class SourceRepository : GenericRepository<Source>, ISourceRepository
+    public class SourceRepository : GenericRepository<SourceEnt>, ISourceRepository
     {
         public SourceRepository(ApplicationDbContext context, ILogErrorRepository logError) : base(context, logError)
         {
         }
 
-        public async Task<Source?> GetByUrlAsync(string url)
+        public async Task<SourceEnt?> GetByUrlAsync(string url)
         {
             return await FirstAsync(s => s.Url == url);
         }

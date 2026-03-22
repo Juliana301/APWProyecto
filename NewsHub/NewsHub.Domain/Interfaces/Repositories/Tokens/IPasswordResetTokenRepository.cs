@@ -5,7 +5,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Interfaces.Repositories.Tokens
 {
-    public interface IPasswordResetTokenRepository : IGenericRepository<PasswordResetToken>
+    public interface IPasswordResetTokenRepository : IGenericRepository<PasswordResetTokenEnt>
     {
 
     }

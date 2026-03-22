@@ -7,9 +7,9 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Data.Configurations
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<Role>
+    public class RoleConfiguration : IEntityTypeConfiguration<RoleEnt>
     {
-        public void Configure(EntityTypeBuilder<Role> builder)
+        public void Configure(EntityTypeBuilder<RoleEnt> builder)
         {
             builder.ToTable("Roles");
 

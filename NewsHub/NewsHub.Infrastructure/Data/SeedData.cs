@@ -23,7 +23,7 @@ namespace NewsHub.Infrastructure.Data
             {
                 if (!db.Roles.Any(r => r.Name == roleName))
                 {
-                    db.Roles.Add(new Role(roleName));
+                    db.Roles.Add(new RoleEnt(roleName));
                 }
             }
 

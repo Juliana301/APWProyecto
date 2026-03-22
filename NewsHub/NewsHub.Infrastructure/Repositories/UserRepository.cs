@@ -9,7 +9,7 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Repositories
 {
-    public class UserRepository : GenericRepository<User>, IUserRepository
+    public class UserRepository : GenericRepository<UserEnt>, IUserRepository
     {
 
         public UserRepository(
@@ -18,12 +18,12 @@ namespace NewsHub.Infrastructure.Repositories
         {
         }
 
-        public async Task<User?> GetByEmailAsync(string email)
+        public async Task<UserEnt?> GetByEmailAsync(string email)
         {
             return await FirstAsync(u => u.Email == email);
         }
 
-        public async Task<User?> GetByUserNameAsync(string userName)
+        public async Task<UserEnt?> GetByUserNameAsync(string userName)
         {
             return await FirstAsync(
                 u => u.UserName == userName,

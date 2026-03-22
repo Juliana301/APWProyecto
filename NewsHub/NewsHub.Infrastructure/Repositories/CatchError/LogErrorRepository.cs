@@ -26,7 +26,7 @@ namespace NewsHub.Infrastructure.Repositories.CatchError
                 if (exception == null)
                     throw new ArgumentNullException(nameof(exception));
 
-                var logEntry = new LogError
+                var logEntry = new LogErrorEnt
                 (
                     origin,
                     exception.Message,

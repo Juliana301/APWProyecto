@@ -5,9 +5,9 @@ using System.Text;
 
 namespace NewsHub.Domain.Interfaces.Repositories
 {
-    public interface IUserRepository : IGenericRepository<User>
+    public interface IUserRepository : IGenericRepository<UserEnt>
     {
-        Task<User?> GetByEmailAsync(string email);
-        Task<User?> GetByUserNameAsync(string userName);
+        Task<UserEnt?> GetByEmailAsync(string email);
+        Task<UserEnt?> GetByUserNameAsync(string userName);
     }  
 }

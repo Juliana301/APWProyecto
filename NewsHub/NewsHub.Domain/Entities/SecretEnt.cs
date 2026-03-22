@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
-    public class Secret
+    public class SecretEnt
     {
         public int Id { get; private set; }
 
@@ -16,11 +16,11 @@ namespace NewsHub.Domain.Entities
 
         public DateTime CreatedAt { get; private set; }
 
-        public Source? Source { get; private set; }
+        public SourceEnt? Source { get; private set; }
 
-        private Secret() { }
+        private SecretEnt() { }
 
-        public Secret(string key, string value, bool isEncrypted, int? sourceId = null)
+        public SecretEnt(string key, string value, bool isEncrypted, int? sourceId = null)
         {
             Key = key;
             Value = value;

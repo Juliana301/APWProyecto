@@ -7,9 +7,9 @@ using System.Text;
 
 namespace NewsHub.Infrastructure.Data.Configurations
 {
-    public class ImportHistoryConfiguration : IEntityTypeConfiguration<ImportHistory>
+    public class ImportHistoryConfiguration : IEntityTypeConfiguration<ImportHistoryEnt>
     {
-        public void Configure(EntityTypeBuilder<ImportHistory> builder)
+        public void Configure(EntityTypeBuilder<ImportHistoryEnt> builder)
         {
             builder.ToTable("ImportHistory");
 

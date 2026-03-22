@@ -4,9 +4,9 @@ using NewsHub.Domain.Entities;
 
 namespace NewsHub.Infrastructure.Data.Configurations
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class UserConfiguration : IEntityTypeConfiguration<UserEnt>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<UserEnt> builder)
         {
             builder.ToTable("Users");
 

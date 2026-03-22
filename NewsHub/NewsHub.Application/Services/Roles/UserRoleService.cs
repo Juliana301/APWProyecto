@@ -62,7 +62,7 @@ namespace NewsHub.Application.Services.Roles
 
             var newUserRoles = roleIds
                 .Where(roleId => !existingRoleIds.Contains(roleId))
-                .Select(roleId => new UserRole(userId, roleId))
+                .Select(roleId => new UserRoleEnt(userId, roleId))
                 .ToList();
 
             foreach (var userRole in newUserRoles)
