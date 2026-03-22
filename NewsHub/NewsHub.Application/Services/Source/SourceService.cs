@@ -1,5 +1,7 @@
 using NewsHub.Application.Common;
+using NewsHub.Application.Common.Models;
 using NewsHub.Application.DTOs.Source;
+using NewsHub.Application.External;
 using NewsHub.Application.Interfaces.Persistence;
 using NewsHub.Application.Interfaces.Services;
 using NewsHub.Domain.Entities;
@@ -11,11 +13,17 @@ namespace NewsHub.Application.Services.Source
     {
         private readonly ISourceRepository _sourceRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly SourceReaderFactory _readerFactory;
 
-        public SourceService(ISourceRepository sourceRepository, IUnitOfWork unitOfWork)
+
+        public SourceService(
+            ISourceRepository sourceRepository,
+            IUnitOfWork unitOfWork,
+            SourceReaderFactory readerFactory)
         {
             _sourceRepository = sourceRepository;
             _unitOfWork = unitOfWork;
+            _readerFactory = readerFactory;
         }
 
         public async Task<Result<SourceDto>> CreateAsync(SourceDto dto)
@@ -158,6 +166,56 @@ namespace NewsHub.Application.Services.Source
             catch (Exception ex)
             {
                 return Result<SourceDto>.Fail($"Error actualizando fuente: {ex.Message}", TypeMessage.Error);
+            }
+        }
+
+        public async Task<Result<List<SourceItem>>> ReadAllFeedsAsync()
+        {
+            try
+            {
+                var sources =
+                    await _sourceRepository.GetAllAsync();
+
+                if (sources == null || !sources.Any())
+                {
+                    return Result<List<SourceItem>>
+                        .Ok(new List<SourceItem>());
+                }
+
+                var allItems =
+                    new List<SourceItem>();
+
+                foreach (var source in sources)
+                {
+                    try
+                    {
+                        // Obtener reader según tipo
+                        var reader =
+                            _readerFactory.GetReader(
+                                source.ComponentType);
+
+                        // Leer noticias
+                        var items =
+                            await reader.ReadAsync(source);
+
+                        if (items != null)
+                            allItems.AddRange(items);
+                    }
+                    catch
+                    {
+                        // Si una fuente falla, seguimos con las demás
+                    }
+                }
+
+                return Result<List<SourceItem>>
+                    .Ok(allItems);
+            }
+            catch (Exception ex)
+            {
+                return Result<List<SourceItem>>
+                    .Fail(
+                        $"Error leyendo feeds: {ex.Message}",
+                        TypeMessage.Error);
             }
         }
     }

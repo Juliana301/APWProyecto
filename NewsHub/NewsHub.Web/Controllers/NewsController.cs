@@ -47,5 +47,43 @@ namespace NewsHub.Web.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetFeedJson()
+        {
+            var result =
+                await _sourceService
+                    .ReadAllFeedsAsync();
+
+            if (!result.Success || result.Data == null)
+                return Json(new List<object>());
+
+            var json =
+                result.Data
+                    .OrderByDescending(x => x.PublishedAt)
+                    .Select((item, index) => new
+                    {
+                        id = index + 1,
+
+                        source = item.SourceName ?? "RSS",
+
+                        type = "feed",
+
+                        title = item.Title,
+
+                        description = item.Description,
+
+                        date = item.PublishedAt
+                            .ToString("yyyy-MM-dd"),
+
+                        tags = new List<string>
+                        {
+                    "RSS"
+                        }
+                    });
+
+            return Json(json);
+        }
     }
 }

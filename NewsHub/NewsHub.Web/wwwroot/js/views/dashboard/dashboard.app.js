@@ -17,7 +17,8 @@ if (localStorage.getItem('darkMode') === 'true') document.documentElement.classL
 
 
 // Render inicial
-renderFeed();
+//renderFeed();
+loadFeed();
 renderSaved();
 
 

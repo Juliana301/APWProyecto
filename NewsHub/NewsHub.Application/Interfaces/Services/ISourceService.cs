@@ -1,5 +1,6 @@
-using NewsHub.Application.DTOs.Source;
 using NewsHub.Application.Common;
+using NewsHub.Application.Common.Models;
+using NewsHub.Application.DTOs.Source;
 
 namespace NewsHub.Application.Interfaces.Services
 {
@@ -10,5 +11,7 @@ namespace NewsHub.Application.Interfaces.Services
         Task<Result<SourceDto>> CreateAsync(SourceDto dto);
         Task<Result<SourceDto>> UpdateAsync(int id, SourceDto dto);
         Task<Result<bool>> DeleteAsync(int id);
+
+        Task<Result<List<SourceItem>>> ReadAllFeedsAsync();
     }
 }

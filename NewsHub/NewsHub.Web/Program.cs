@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using NewsHub.Application.Configuration;
+using NewsHub.Application.External;
+using NewsHub.Application.Interfaces;
 using NewsHub.Application.Interfaces.Authentication;
 using NewsHub.Application.Interfaces.Notifications;
 using NewsHub.Application.Interfaces.Persistence;
@@ -17,6 +19,7 @@ using NewsHub.Domain.Interfaces.Repositories.ErrorCatch;
 using NewsHub.Domain.Interfaces.Repositories.Tokens;
 using NewsHub.Infrastructure.Data;
 using NewsHub.Infrastructure.Email.AzureEmail;
+using NewsHub.Infrastructure.External;
 using NewsHub.Infrastructure.Repositories;
 using NewsHub.Infrastructure.Repositories.CatchError;
 using NewsHub.Infrastructure.Repositories.Tokens;
@@ -98,7 +101,11 @@ builder.Services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService
 // PARSERS
 // ======================================================
 
+builder.Services.AddHttpClient();
 
+builder.Services.AddScoped<ISourceReader, RssSourceReader>();
+
+builder.Services.AddScoped<SourceReaderFactory>();
 
 // ======================================================
 // SECURITY SERVICES
