@@ -51,6 +51,19 @@ namespace NewsHub.Infrastructure.External
                         rssItem.Element("link")?.Value
                         ?? "#";
 
+                    // MÚLTIPLES CATEGORÍAS
+                    var categories =
+                        rssItem.Elements("category")
+                            .Select(c => c.Value)
+                            .Where(c => !string.IsNullOrWhiteSpace(c))
+                            .ToArray();
+
+                    if (categories.Length == 0)
+                    {
+                        categories =
+                            new[] { "Sin categoría" };
+                    }
+
                     var pubDateText =
                         rssItem.Element("pubDate")?.Value;
 
@@ -62,11 +75,15 @@ namespace NewsHub.Infrastructure.External
                     {
                         SourceId = source.Id,
 
+                        SourceName = source.Name,
+
                         Title = title,
 
                         Description = description,
 
                         Url = link,
+
+                        Category = categories,
 
                         PublishedAt =
                             pubDate == default

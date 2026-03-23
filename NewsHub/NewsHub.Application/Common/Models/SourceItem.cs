@@ -12,6 +12,8 @@ namespace NewsHub.Application.Common.Models
 
         public string Title { get; set; } = string.Empty;
 
+        public string[] Category { get; set; } = Array.Empty<string>();
+
         public string Description { get; set; } = string.Empty;
 
         public string Url { get; set; } = string.Empty;

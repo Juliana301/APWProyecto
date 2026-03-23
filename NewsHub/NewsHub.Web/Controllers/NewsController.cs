@@ -77,10 +77,7 @@ namespace NewsHub.Web.Controllers
                         date = item.PublishedAt
                             .ToString("yyyy-MM-dd"),
 
-                        tags = new List<string>
-                        {
-                    "RSS"
-                        }
+                        tags = item.Category
                     });
 
             return Json(json);
