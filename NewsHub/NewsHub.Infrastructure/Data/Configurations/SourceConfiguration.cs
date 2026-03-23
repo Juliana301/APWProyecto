@@ -24,15 +24,20 @@ namespace NewsHub.Infrastructure.Data.Configurations
                 .HasMaxLength(200);
 
             builder.Property(x => x.Description)
-                .IsRequired()
                 .HasMaxLength(500);
 
             builder.Property(x => x.ComponentType)
                 .HasConversion<string>();
 
+            builder.HasIndex(x => x.ComponentType);
+
             builder.Property(x => x.RequiresSecret)
                 .IsRequired()
                 .HasDefaultValue(false);
+
+            builder.Property(x => x.ApiConfigJson)
+                .HasColumnType("nvarchar(max)")
+                .IsRequired(false);
         }
     }
 }

@@ -10,5 +10,7 @@ namespace NewsHub.Application.DTOs.Source
         public string? Description { get; init; }
         public SourceType ComponentType { get; init; }
         public bool RequiresSecret { get; init; }
+
+        public string? ApiConfigJson { get; init; }
     }
 }

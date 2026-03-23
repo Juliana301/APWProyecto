@@ -104,6 +104,7 @@ builder.Services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<ISourceReader, RssSourceReader>();
+builder.Services.AddScoped<ISourceReader, ApiSourceReader>();
 
 builder.Services.AddScoped<SourceReaderFactory>();
 

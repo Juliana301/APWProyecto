@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json.Nodes;
 
 namespace NewsHub.Domain.Entities
 {
@@ -16,6 +17,9 @@ namespace NewsHub.Domain.Entities
 
         public SourceType ComponentType { get; private set; }
         public bool RequiresSecret { get; private set; }
+
+        // ApiConfigJson para almacenar la configuración específica de la API para cada fuente.
+        public string? ApiConfigJson { get; private set; }
 
         public ICollection<SourceItemEnt> Items { get; private set; } = new List<SourceItemEnt>();
         public ICollection<SecretEnt> Secrets { get; private set; } = new List<SecretEnt>();
@@ -38,6 +42,16 @@ namespace NewsHub.Domain.Entities
             ComponentType = componentType;
             RequiresSecret = requiresSecret;
             Description = description;
+        }
+
+        public void SetApiConfig(string? apiConfigJson)
+        {
+            if (!string.IsNullOrWhiteSpace(apiConfigJson))
+            {
+                JsonObject.Parse(apiConfigJson);
+            }
+
+            ApiConfigJson = apiConfigJson;
         }
     }
 }
