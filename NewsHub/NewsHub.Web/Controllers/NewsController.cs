@@ -34,7 +34,8 @@ namespace NewsHub.Web.Controllers
                     Name = s.Name,
                     Description = s.Description,
                     ComponentType = s.ComponentType,
-                    RequiresSecret = s.RequiresSecret
+                    RequiresSecret = s.RequiresSecret,
+                    ApiConfigJson = s.ApiConfigJson
                 }).ToList();
             }
 

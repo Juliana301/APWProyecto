@@ -4,10 +4,9 @@ using System.Text;
 
 namespace NewsHub.Domain.Enums
 {
-    public enum SourceType
+    public enum ApiConfigType
     {
-        Api = 0,
-        Rss = 1,
-        Html = 2
+        Simple = 0,
+        IdPipeline = 1
     }
 }

@@ -63,11 +63,43 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // CONFIGURATIONS (Application Settings)
 // ======================================================
 
-var baseUrl = builder.Configuration["AppSettings:BaseUrl"];
+// BaseUrl
+var baseUrl =
+    builder.Configuration["NewsHub_App_BaseUrl"]
+    ?? builder.Configuration["AppSettings:BaseUrl"];
 
 if (string.IsNullOrWhiteSpace(baseUrl))
-    throw new InvalidOperationException("AppSettings:BaseUrl is not configured.");
+    throw new InvalidOperationException(
+        "AppSettings:BaseUrl is not configured.");
 
+builder.Configuration["AppSettings:BaseUrl"] = baseUrl;
+
+
+// Azure Email ConnectionString
+var azureConnection =
+    builder.Configuration["NewsHub_AzureEmail_ConnectionString"]
+    ?? builder.Configuration["AzureEmail:ConnectionString"];
+
+if (string.IsNullOrWhiteSpace(azureConnection))
+    throw new InvalidOperationException(
+        "AzureEmail:ConnectionString is not configured.");
+
+builder.Configuration["AzureEmail:ConnectionString"] = azureConnection;
+
+
+// Azure Email From
+var azureFrom =
+    builder.Configuration["NewsHub_AzureEmail_From"]
+    ?? builder.Configuration["AzureEmail:From"];
+
+if (string.IsNullOrWhiteSpace(azureFrom))
+    throw new InvalidOperationException(
+        "AzureEmail:From is not configured.");
+
+builder.Configuration["AzureEmail:From"] = azureFrom;
+
+
+// Bind settings
 builder.Services.Configure<AppSettings>(
     builder.Configuration.GetSection("AppSettings"));
 
@@ -156,11 +188,21 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var provider = scope.ServiceProvider;
+    var db = provider.GetRequiredService<ApplicationDbContext>();
 
-    // var db = provider.GetRequiredService<ApplicationDbContext>();
-    // db.Database.Migrate();
+    try
+    {
+        await db.Database.MigrateAsync();
+        await SeedData.EnsureRolesAsync(provider);
+    }
+    catch (Exception ex)
+    {
+        var scopedLogger =
+            provider.GetRequiredService<ILogger<Program>>();
 
-    await SeedData.EnsureRolesAsync(provider);
+        scopedLogger.LogError(ex,
+            "Error applying migrations or seeding database.");
+    }
 }
 
 

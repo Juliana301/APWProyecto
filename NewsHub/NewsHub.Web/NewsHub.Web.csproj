@@ -29,4 +29,12 @@
     <ProjectReference Include="..\NewsHub.Infrastructure\NewsHub.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\casti\source\repos\ClientsU\Laura\APWProyecto\NewsHub\NewsHub.Web\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\casti\source\repos\ClientsU\Laura\APWProyecto\NewsHub\NewsHub.Web\.editorconfig" />
+  </ItemGroup>
+
 </Project>

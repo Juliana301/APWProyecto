@@ -22,11 +22,14 @@ namespace NewsHub.Web.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult NewSource(DashboardViewModel vm)
         {
+            ModelState.Clear();
+
             if (!TryValidateModel(vm.NewSource, nameof(vm.NewSource)))
             {
+
                 var error = ModelState.Values
                     .SelectMany(v => v.Errors)
-                    .FirstOrDefault()?.ErrorMessage;
+                    .LastOrDefault()?.ErrorMessage;
 
                 TempData.SetToast(error ?? "Error de validación", TypeMessage.Error);
                 return RedirectToAction("Index", "News");
@@ -49,6 +52,46 @@ namespace NewsHub.Web.Controllers
             }
 
             return RedirectToAction("Index", "News");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditSource(DashboardViewModel vm)
+        {
+            ModelState.Clear();
+            if (!TryValidateModel(vm.EditSource, nameof(vm.EditSource)))
+            {
+                var error = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .FirstOrDefault()?.ErrorMessage;
+                TempData.SetToast(error ?? "Error de validación", TypeMessage.Error);
+                return RedirectToAction("Index", "News");
+            }
+
+            var dto = new SourceDto
+            {
+                Id = vm.EditSource.Id,
+                Url = vm.EditSource.Url,
+                Name = vm.EditSource.Name,
+                Description = vm.EditSource.Description,
+                ComponentType = vm.EditSource.ComponentType,
+                RequiresSecret = vm.EditSource.RequiresSecret
+            };
+
+            var result = await _sourceService.UpdateAsync(dto.Id, dto);
+            if (result.IsFailure)
+            {
+                TempData.SetToast(result.Error!, TypeMessage.Error);
+            }
+            return RedirectToAction("Index", "News");
+
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSource(int id)
+        {
+            return View();
         }
     }
 }

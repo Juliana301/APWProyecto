@@ -6,6 +6,7 @@ using NewsHub.Application.Interfaces.Persistence;
 using NewsHub.Application.Interfaces.Services;
 using NewsHub.Domain.Entities;
 using NewsHub.Domain.Interfaces.Repositories;
+using System.ComponentModel;
 
 namespace NewsHub.Application.Services.Source
 {
@@ -95,9 +96,10 @@ namespace NewsHub.Application.Services.Source
                     Id = s.Id,
                     Url = s.Url,
                     Name = s.Name,
+                    Description = s.Description,
                     ComponentType = s.ComponentType,
                     RequiresSecret = s.RequiresSecret,
-                    Description = s.Description
+                    ApiConfigJson = s.ApiConfigJson
                 }).ToList();
 
                 return Result<List<SourceDto>>.Ok(dtos);
@@ -139,17 +141,36 @@ namespace NewsHub.Application.Services.Source
         {
             try
             {
-                var entity = await _sourceRepository.GetByIdAsync(id, asNoTracking: false);
+                var entity = await _sourceRepository
+                    .GetByIdAsync(id, asNoTracking: false);
 
                 if (entity == null)
-                    return Result<SourceDto>.Fail("Fuente no encontrada.", TypeMessage.Warning);
+                    return Result<SourceDto>.Fail(
+                        "Fuente no encontrada.",
+                        TypeMessage.Warning);
 
-                entity.Update(dto.Url, dto.Name, dto.ComponentType, dto.RequiresSecret, dto.Description);
+                entity.Update(
+                    dto.Url,
+                    dto.Name,
+                    dto.ComponentType,
+                    dto.RequiresSecret,
+                    dto.Description
+                );
 
-                var updated = await _sourceRepository.UpdateAsync(entity);
+                if (dto.ComponentType != Domain.Enums.SourceType.Api)
+                {
+                    dto.ApiConfigJson = null;
+                }
+
+                entity.SetApiConfig(dto.ApiConfigJson);
+
+                var updated =
+                    await _sourceRepository.UpdateAsync(entity);
 
                 if (updated == null)
-                    return Result<SourceDto>.Fail("No se pudo actualizar la fuente.", TypeMessage.Error);
+                    return Result<SourceDto>.Fail(
+                        "No se pudo actualizar la fuente.",
+                        TypeMessage.Error);
 
                 var resultDto = new SourceDto
                 {
@@ -158,14 +179,27 @@ namespace NewsHub.Application.Services.Source
                     Name = updated.Name,
                     ComponentType = updated.ComponentType,
                     RequiresSecret = updated.RequiresSecret,
-                    Description = updated.Description
+                    Description = updated.Description,
+                    ApiConfigJson = updated.ApiConfigJson
                 };
 
-                return Result<SourceDto>.Ok(resultDto, "Fuente actualizada.");
+                return Result<SourceDto>.Ok(
+                    resultDto,
+                    "Fuente actualizada."
+                );
+            }
+            catch (ArgumentException ex)
+            {
+                // errores de validación JSON
+                return Result<SourceDto>.Fail(
+                    ex.Message,
+                    TypeMessage.Warning);
             }
             catch (Exception ex)
             {
-                return Result<SourceDto>.Fail($"Error actualizando fuente: {ex.Message}", TypeMessage.Error);
+                return Result<SourceDto>.Fail(
+                    $"Error actualizando fuente: {ex.Message}",
+                    TypeMessage.Error);
             }
         }
 
