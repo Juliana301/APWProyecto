@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NewsHub.Domain.Enums;
 
 namespace NewsHub.Application.Common.Models
 {
@@ -9,6 +10,8 @@ namespace NewsHub.Application.Common.Models
         public int SourceId { get; set; }
 
         public string SourceName { get; set; } = string.Empty;
+
+        public SourceType SourceType { get; set; }
 
         public string Title { get; set; } = string.Empty;
 

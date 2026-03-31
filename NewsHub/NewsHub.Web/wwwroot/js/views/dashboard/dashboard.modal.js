@@ -158,27 +158,73 @@ function closeEditModal() {
 
 }
 
+// ===== BOTONES ELIMINAR =====
+
+document.addEventListener("click", function (e) {
+
+    const btn = e.target.closest(".delete-btn");
+
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    const name = btn.dataset.name;
+
+    openDeleteModal(id, name);
+
+});
+
 
 // ===== MODAL: ELIMINAR FUENTE =====
 
 function openDeleteModal(id, name) {
 
-    document.getElementById('delete-id').value = id;
+    const idInput =
+        document.getElementById("DeleteSource_Id");
+    const nameInput =
+        document.getElementById("DeleteSource_SourceName");
 
-    document.getElementById('delete-source-name')
-        .textContent = '"' + name + '"';
+    const nameLabel =
+        document.getElementById("delete-source-name");
 
-    document.getElementById('modal-delete')
-        .classList.remove('hidden');
+    const modal =
+        document.getElementById("modal-delete");
 
-    lucide.createIcons();
+    if (!idInput || !nameInput || !nameLabel || !modal) {
+
+        console.error(
+            "Elementos del modal-delete no encontrados"
+        );
+
+        return;
+
+    }
+
+    idInput.value = id;
+    nameInput.value = name;
+
+    nameLabel.textContent =
+        '"' + name + '"';
+
+    modal.classList.remove("hidden");
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 
 }
 
 
+// ===== CERRAR MODAL =====
+
 function closeDeleteModal() {
 
-    document.getElementById('modal-delete')
-        .classList.add('hidden');
+    const modal =
+        document.getElementById("modal-delete");
+
+    if (modal) {
+
+        modal.classList.add("hidden");
+
+    }
 
 }

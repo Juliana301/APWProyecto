@@ -45,7 +45,7 @@
         <!-- Remember + Forgot -->
         <div class="mb-6 flex items-center justify-between">
             <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="remember" class="w-4 h-4 rounded border-surface-300 text-brand-500 focus:ring-brand-500" />
+                <input asp-for="RememberMe" type="checkbox" class="w-4 h-4 rounded border-surface-300 text-brand-500 focus:ring-brand-500" />
                 <span class="text-sm text-surface-600 dark:text-surface-400">Recordarme</span>
             </label>
             <a asp-controller="Authentication" asp-action="ForgotPassword" class="text-sm text-brand-600 dark:text-brand-400 hover:underline">Olvidaste tu contrasena?</a>

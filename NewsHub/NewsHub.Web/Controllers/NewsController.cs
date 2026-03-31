@@ -19,7 +19,7 @@ namespace NewsHub.Web.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Index(string search)
+        public async Task<IActionResult> Index()
         {
             var result = await _sourceService.GetAllAsync();
 
@@ -27,7 +27,7 @@ namespace NewsHub.Web.Controllers
 
             if (result.Success && result.Data != null)
             {
-                vm.Sources = result.Data.Select(s => new SourceViewModel
+                vm.Sources = result.Data.Select(s => new ListSourceViewViewModel
                 {
                     Id = s.Id,
                     Url = s.Url,
@@ -67,18 +67,18 @@ namespace NewsHub.Web.Controllers
                     {
                         id = index + 1,
 
-                        source = item.SourceName ?? "RSS",
+                        source = item.SourceName ?? "NOTFOUND", // Nombre de la fuente, o "NOTFOUND" si no se proporciona
 
-                        type = "feed",
+                        type = item.SourceType.ToString(), // Tipo de fuente (RSS, API, etc.)
 
-                        title = item.Title,
+                        title = item.Title, // Título de la noticia
 
-                        description = item.Description,
+                        description = item.Description, // Descripción de la noticia
 
                         date = item.PublishedAt
                             .ToString("yyyy-MM-dd"),
 
-                        tags = item.Category
+                        tags = item.Category // Categorías o etiquetas asociadas a la noticia
                     });
 
             return Json(json);

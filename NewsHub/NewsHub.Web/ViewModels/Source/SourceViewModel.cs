@@ -22,14 +22,29 @@ namespace NewsHub.Web.ViewModels.Source
         [Display(Name = "Descripción")]
         public string? Description { get; set; }
 
-        [Display(Name = "Configuración API (JSON)")]
-        public string? ApiConfigJson { get; set; } = string.Empty;
-
         [Required(ErrorMessage = "Debe seleccionar un tipo de componente.")]
         [Display(Name = "Tipo de componente")]
         public SourceType ComponentType { get; set; }
 
         [Display(Name = "Requiere secreto")]
         public bool RequiresSecret { get; set; }
+    }
+
+    public class ListSourceViewViewModel : SourceViewModel
+    {
+        public string? ApiConfigJson { get; set; }
+    }
+
+    public class EditSourceViewModel : SourceViewModel
+    {
+        [Display(Name = "Configuración API (JSON)")]
+        public string? ApiConfigJson { get; set; } = string.Empty;
+    }
+
+    public class DeleteSourceViewModel
+    {
+        public int Id { get; set; }
+
+        public string SourceName { get; set; } = null!;
     }
 }

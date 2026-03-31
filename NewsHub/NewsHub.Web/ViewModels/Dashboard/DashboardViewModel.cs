@@ -5,7 +5,8 @@ namespace NewsHub.Web.ViewModels.Dashboard
     public class DashboardViewModel
     {
         public SourceViewModel NewSource { get; set; } = new();
-        public List<SourceViewModel> Sources { get; set; } = new();
-        public SourceViewModel EditSource { get; set; } = new();
+        public List<ListSourceViewViewModel> Sources { get; set; } = new();
+        public EditSourceViewModel EditSource { get; set; } = new();
+        public DeleteSourceViewModel DeleteSource { get; set; } = new();
     }
 }

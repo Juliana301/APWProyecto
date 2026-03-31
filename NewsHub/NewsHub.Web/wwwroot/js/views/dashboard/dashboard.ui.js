@@ -32,8 +32,8 @@ function switchTab(name) {
 
 // Badge color
 function sourceColor(type) {
-    if (type === 'api') return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
-    if (type === 'feed') return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300';
+    if (type === 'Api') return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+    if (type === 'Rss') return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300';
     return 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300';
 }
 

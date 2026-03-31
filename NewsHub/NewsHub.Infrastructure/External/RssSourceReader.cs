@@ -77,6 +77,8 @@ namespace NewsHub.Infrastructure.External
 
                         SourceName = source.Name,
 
+                        SourceType = source.ComponentType,
+
                         Title = title,
 
                         Description = description,

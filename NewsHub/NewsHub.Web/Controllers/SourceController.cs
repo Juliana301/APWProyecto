@@ -51,6 +51,8 @@ namespace NewsHub.Web.Controllers
                 TempData.SetToast(result.Result.Error!, TypeMessage.Error);
             }
 
+            TempData.SetToast(result.Result.Message!, TypeMessage.Success);
+
             return RedirectToAction("Index", "News");
         }
 
@@ -81,17 +83,39 @@ namespace NewsHub.Web.Controllers
             var result = await _sourceService.UpdateAsync(dto.Id, dto);
             if (result.IsFailure)
             {
-                TempData.SetToast(result.Error!, TypeMessage.Error);
+                TempData.SetToast(result.Error!, result.TypeMessage);
             }
+
+            TempData.SetToast(result.Message!, result.TypeMessage);
+
             return RedirectToAction("Index", "News");
 
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteSource(int id)
+        public async Task<IActionResult> DeleteSource(DashboardViewModel vm)
         {
-            return View();
+            ModelState.Clear();
+            if (!TryValidateModel(vm.DeleteSource, nameof(vm.DeleteSource)))
+            {
+                var error = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .FirstOrDefault()?.ErrorMessage;
+                TempData.SetToast(error ?? "Error de validación", TypeMessage.Error);
+                return RedirectToAction("Index", "News");
+            }
+
+            var result = await _sourceService.DeleteAsync(vm.DeleteSource.Id, vm.DeleteSource.SourceName);
+
+            if (result.IsFailure)
+            {
+                TempData.SetToast(result.Error ?? "Error al eliminar la fuente", result.TypeMessage);
+            }
+
+            TempData.SetToast(result.Message ?? "Fuente eliminada correctamente", result.TypeMessage);
+
+            return RedirectToAction("Index", "News");
         }
     }
 }

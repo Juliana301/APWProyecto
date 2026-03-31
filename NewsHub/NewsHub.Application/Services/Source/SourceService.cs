@@ -68,10 +68,16 @@ namespace NewsHub.Application.Services.Source
             }
         }
 
-        public async Task<Result<bool>> DeleteAsync(int id)
+        public async Task<Result<bool>> DeleteAsync(int id, string sourceName)
         {
             try
             {
+                // Validamos que exista la fuente con su nombre, para evitar eliminar por error si el id no coincide
+                var exists = await _sourceRepository.FindAsync(s => s.Id == id && s.Name == sourceName);
+
+                if (!exists.Any())
+                    return Result<bool>.Fail("Fuente no encontrada.", TypeMessage.Warning);
+
                 var deleted = await _sourceRepository.DeleteAsync(id);
 
                 if (!deleted)
