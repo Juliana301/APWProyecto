@@ -77,6 +77,7 @@ namespace NewsHub.Web.Controllers
                 Name = vm.EditSource.Name,
                 Description = vm.EditSource.Description,
                 ComponentType = vm.EditSource.ComponentType,
+                ApiConfigJson = vm.EditSource.ApiConfigJson,
                 RequiresSecret = vm.EditSource.RequiresSecret
             };
 

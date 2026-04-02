@@ -3,10 +3,6 @@ using NewsHub.Application.Interfaces;
 using NewsHub.Domain.Entities;
 using NewsHub.Domain.Enums;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NewsHub.Infrastructure.External
 {
@@ -21,6 +17,10 @@ namespace NewsHub.Infrastructure.External
 
         public SourceType Type => SourceType.Api;
 
+        // =========================================================
+        // ENTRY POINT
+        // =========================================================
+
         public async Task<List<SourceItem>> ReadAsync(SourceEnt source)
         {
             var items = new List<SourceItem>();
@@ -33,37 +33,32 @@ namespace NewsHub.Infrastructure.External
                 var config =
                     JObject.Parse(source.ApiConfigJson);
 
-                var type =
+                var readerType =
                     config["Type"]?.ToString();
 
-                switch (type)
+                items = readerType switch
                 {
-                    case "Simple":
-                        items = await ReadSimpleAsync(
-                            source,
-                            config
-                        );
-                        break;
+                    "Simple" =>
+                        await ReadSimpleAsync(source, config),
 
-                    case "IdPipeline":
-                        items = await ReadIdPipelineAsync(
-                            source,
-                            config
-                        );
-                        break;
-                }
+                    "IdPipeline" =>
+                        await ReadIdPipelineAsync(source, config),
+
+                    _ => new List<SourceItem>()
+                };
             }
-            catch
+            catch (Exception ex)
             {
-                // luego logging
+                // TODO: logging
+                // _logger.LogError(ex, "Error reading API source");
             }
 
             return items;
         }
 
-        // ===============================
-        // SIMPLE API
-        // ===============================
+        // =========================================================
+        // SIMPLE READER
+        // =========================================================
 
         private async Task<List<SourceItem>>
             ReadSimpleAsync(
@@ -78,37 +73,39 @@ namespace NewsHub.Infrastructure.External
             var mapping =
                 config["Mapping"];
 
-            var json =
-                await _httpClient
-                    .GetStringAsync(source.Url);
+            var limit =
+                config["Limit"]?.Value<int>()
+                ?? 20;
 
-            var obj =
-                JObject.Parse(json);
+            var json =
+                await GetJsonAsync(
+                    source.Url,
+                    config);
 
             var elements =
-                obj[root]
-                ?.Take(20);
+                json[root]
+                ?.Take(limit);
 
             if (elements == null)
                 return items;
 
             foreach (var element in elements)
             {
-                items.Add(
+                var item =
                     MapItem(
                         source,
                         element,
-                        mapping
-                    )
-                );
+                        mapping);
+
+                items.Add(item);
             }
 
             return items;
         }
 
-        // ===============================
-        // ID PIPELINE (HACKER NEWS)
-        // ===============================
+        // =========================================================
+        // ID PIPELINE READER
+        // =========================================================
 
         private async Task<List<SourceItem>>
             ReadIdPipelineAsync(
@@ -132,46 +129,49 @@ namespace NewsHub.Infrastructure.External
             var mapping =
                 config["Mapping"];
 
-            // 1️⃣ Obtener IDs
+            if (string.IsNullOrWhiteSpace(idsUrl) ||
+                string.IsNullOrWhiteSpace(template))
+                return items;
 
-            var idsJson =
-                await _httpClient
-                    .GetStringAsync(idsUrl);
+            // Obtener IDs
+
+            var idsArray =
+                await GetArrayAsync(
+                    idsUrl,
+                    config);
 
             var ids =
-                JArray.Parse(idsJson)
-                .Take(limit);
+                idsArray.Take(limit);
 
-            // 2️⃣ Obtener cada item
+            // Obtener items
 
             foreach (var id in ids)
             {
                 var url =
-                    template
-                    .Replace("{id}", id.ToString());
-
-                var itemJson =
-                    await _httpClient
-                        .GetStringAsync(url);
+                    template.Replace(
+                        "{id}",
+                        id.ToString());
 
                 var obj =
-                    JObject.Parse(itemJson);
+                    await GetJsonAsync(
+                        url,
+                        config);
 
-                items.Add(
+                var item =
                     MapItem(
                         source,
                         obj,
-                        mapping
-                    )
-                );
+                        mapping);
+
+                items.Add(item);
             }
 
             return items;
         }
 
-        // ===============================
+        // =========================================================
         // MAPPING
-        // ===============================
+        // =========================================================
 
         private SourceItem MapItem(
             SourceEnt source,
@@ -181,35 +181,30 @@ namespace NewsHub.Infrastructure.External
             var title =
                 GetValue(
                     obj,
-                    mapping["Title"]?.ToString()
-                )
+                    mapping["Title"]?.ToString())
                 ?? "Sin título";
 
             var description =
                 GetValue(
                     obj,
-                    mapping["Description"]?.ToString()
-                )
+                    mapping["Description"]?.ToString())
                 ?? "";
 
             var url =
                 GetValue(
                     obj,
-                    mapping["Url"]?.ToString()
-                )
+                    mapping["Url"]?.ToString())
                 ?? "#";
 
             var category =
                 GetValue(
                     obj,
-                    mapping["Category"]?.ToString()
-                );
+                    mapping["Category"]?.ToString());
 
             var publishedRaw =
                 GetValue(
                     obj,
-                    mapping["PublishedAt"]?.ToString()
-                );
+                    mapping["PublishedAt"]?.ToString());
 
             var publishedAt =
                 ParseDate(publishedRaw);
@@ -235,9 +230,164 @@ namespace NewsHub.Infrastructure.External
             };
         }
 
-        // ===============================
-        // HELPERS
-        // ===============================
+        // =========================================================
+        // HTTP HELPERS
+        // =========================================================
+
+        private async Task<JObject>
+            GetJsonAsync(
+                string url,
+                JObject config)
+        {
+            var request =
+                BuildRequest(url, config);
+
+            var response =
+                await _httpClient
+                    .SendAsync(request);
+
+            response
+                .EnsureSuccessStatusCode();
+
+            var json =
+                await response
+                    .Content
+                    .ReadAsStringAsync();
+
+            return JObject.Parse(json);
+        }
+
+        private async Task<JArray>
+            GetArrayAsync(
+                string url,
+                JObject config)
+        {
+            var request =
+                BuildRequest(url, config);
+
+            var response =
+                await _httpClient
+                    .SendAsync(request);
+
+            response
+                .EnsureSuccessStatusCode();
+
+            var json =
+                await response
+                    .Content
+                    .ReadAsStringAsync();
+
+            return JArray.Parse(json);
+        }
+
+        // =========================================================
+        // REQUEST BUILDER
+        // =========================================================
+
+        private HttpRequestMessage
+            BuildRequest(
+                string url,
+                JObject config)
+        {
+            // =========================
+            // Query Params
+            // =========================
+
+            var queryParams =
+                config["QueryParams"]
+                as JObject;
+
+            if (queryParams != null)
+            {
+                var uriBuilder =
+                    new UriBuilder(url);
+
+                var query =
+                    System.Web
+                    .HttpUtility
+                    .ParseQueryString(
+                        uriBuilder.Query);
+
+                foreach (var prop in queryParams)
+                {
+                    var value =
+                        ResolveEnvironmentVariable(
+                            prop.Value?.ToString());
+
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        query[prop.Key] = value;
+                    }
+                }
+
+                uriBuilder.Query =
+                    query.ToString();
+
+                url =
+                    uriBuilder.ToString();
+            }
+
+            var request =
+                new HttpRequestMessage(
+                    HttpMethod.Get,
+                    url);
+
+            // =========================
+            // Headers
+            // =========================
+
+            var headers =
+                config["Headers"]
+                as JObject;
+
+            if (headers != null)
+            {
+                foreach (var header in headers)
+                {
+                    var value =
+                        ResolveEnvironmentVariable(
+                            header.Value?.ToString());
+
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        request.Headers.Add(
+                            header.Key,
+                            value);
+                    }
+                }
+            }
+
+            return request;
+        }
+
+        // =========================================================
+        // ENVIRONMENT VARIABLE SUPPORT
+        // =========================================================
+
+        private string? ResolveEnvironmentVariable(
+            string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return value;
+
+            if (value.StartsWith("{{") &&
+                value.EndsWith("}}"))
+            {
+                var envName =
+                    value
+                        .Replace("{{", "")
+                        .Replace("}}", "");
+
+                return Environment
+                    .GetEnvironmentVariable(envName);
+            }
+
+            return value;
+        }
+
+        // =========================================================
+        // JSON HELPERS
+        // =========================================================
 
         private string? GetValue(
             JToken obj,
@@ -251,6 +401,10 @@ namespace NewsHub.Infrastructure.External
                 ?.ToString();
         }
 
+        // =========================================================
+        // DATE HELPERS
+        // =========================================================
+
         private DateTime ParseDate(
             string? value)
         {
@@ -258,6 +412,7 @@ namespace NewsHub.Infrastructure.External
                 return DateTime.UtcNow;
 
             // Unix timestamp
+
             if (long.TryParse(
                 value,
                 out var unix))
@@ -268,6 +423,7 @@ namespace NewsHub.Infrastructure.External
             }
 
             // ISO Date
+
             if (DateTime.TryParse(
                 value,
                 out var date))
