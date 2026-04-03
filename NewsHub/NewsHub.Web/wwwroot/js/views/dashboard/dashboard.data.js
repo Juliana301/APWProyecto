@@ -35,6 +35,13 @@ async function loadFeed() {
     }
 }
 
+function downloadNewsJson(uniqueId) {
+
+    window.location.href =
+        `/api/ImportExportApi/export/news/${uniqueId}`;
+
+}
+
 // Guardados (mock)
 const savedItems = [
     { id: 101, source: 'NewsAPI', type: 'api', title: 'OpenAI lanza GPT-5 con capacidades multimodales avanzadas', description: 'La nueva version del modelo de lenguaje promete revolucionar la interaccion humano-maquina con comprension visual y auditiva integrada.', date: '2026-02-12', tags: ['IA', 'Tecnologia'] },

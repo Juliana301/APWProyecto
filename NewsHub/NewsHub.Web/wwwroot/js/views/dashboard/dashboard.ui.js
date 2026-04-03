@@ -60,7 +60,7 @@ function createCard(item, isSaved) {
                 ${actionBtn}
                 <div class="flex items-center gap-1">
                   <a href="item-detail.html?id=${item.id}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"><i data-lucide="eye" class="w-3.5 h-3.5"></i>Detalle</a>
-                  <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"><i data-lucide="download" class="w-3.5 h-3.5"></i>JSON</button>
+                  <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors" onclick="downloadNewsJson('${item.id}')" ><i data-lucide="download" class="w-3.5 h-3.5"></i>JSON</button>
                 </div>
               </div>
             </article>`;

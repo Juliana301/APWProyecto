@@ -9,6 +9,8 @@ namespace NewsHub.Application.Common.Models
     {
         public int SourceId { get; set; }
 
+        public string UniqueId => $"{SourceId}_{Url.GetHashCode()}";
+
         public string SourceName { get; set; } = string.Empty;
 
         public SourceType SourceType { get; set; }

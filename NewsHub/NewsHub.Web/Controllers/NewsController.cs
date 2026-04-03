@@ -65,7 +65,7 @@ namespace NewsHub.Web.Controllers
                     .OrderByDescending(x => x.PublishedAt)
                     .Select((item, index) => new
                     {
-                        id = index + 1,
+                        id = item.UniqueId, // ID único basado en el SourceId y el hash de la URL
 
                         source = item.SourceName ?? "NOTFOUND", // Nombre de la fuente, o "NOTFOUND" si no se proporciona
 
