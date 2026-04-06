@@ -21,6 +21,7 @@ namespace NewsHub.Domain.Entities
 
         public ICollection<UserRoleEnt> UserRoles { get; private set; } = new List<UserRoleEnt>();
         public ICollection<PasswordResetTokenEnt> PasswordResetTokens { get; private set; } = new List<PasswordResetTokenEnt>();
+        public ICollection<FavoriteEnt> Favorites { get; private set; } = new List<FavoriteEnt>();
         
         private UserEnt() { } // EF
 

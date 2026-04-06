@@ -17,6 +17,8 @@
     <!-- Mobile overlay -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden"></div>
 
+    @RenderSection("Modals", required: false)
+
     <div class="flex min-h-screen">
 
         @RenderSection("Sidebar", required: false)

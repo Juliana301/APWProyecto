@@ -22,6 +22,7 @@ namespace NewsHub.Infrastructure.Data
 
         public DbSet<SourceEnt> Sources => Set<SourceEnt>();
         public DbSet<SourceItemEnt> SourceItems => Set<SourceItemEnt>();
+        public DbSet<FavoriteEnt> Favorites => Set<FavoriteEnt>();
         public DbSet<SecretEnt> Secrets => Set<SecretEnt>();
 
         public DbSet<LogEnt> Logs => Set<LogEnt>();

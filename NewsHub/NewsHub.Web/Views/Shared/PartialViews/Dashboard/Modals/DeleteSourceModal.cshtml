@@ -1,0 +1,55 @@
+@model DashboardViewModel
+
+<!-- Modal: Confirmar Eliminar -->
+<div id="modal-delete" class="fixed inset-0 z-50 hidden overflow-y-auto">
+
+    <!-- Fondo -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeDeleteModal()">
+    </div>
+
+    <div class="flex min-h-full items-center justify-center p-4">
+
+        <div
+            class="relative w-full max-w-sm bg-white dark:bg-surface-800 rounded-2xl shadow-xl border border-surface-200 dark:border-surface-700 p-6 text-center">
+
+            <!-- Icono -->
+            <div
+                class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+
+                <i data-lucide="alert-triangle" class="w-7 h-7 text-red-600 dark:text-red-400">
+                </i>
+
+            </div>
+
+            <form asp-controller="Source" asp-action="DeleteSource" method="post">
+                <h3 class="text-lg font-semibold mb-2">
+                    Eliminar Fuente
+                </h3>
+                <p class="text-sm text-surface-500 dark:text-surface-400 mb-1">
+                    Estas seguro de eliminar la fuente:
+                </p>
+                <!-- Nombre dinámico -->
+                <p id="delete-source-name" class="text-sm font-semibold text-surface-700 dark:text-surface-200 mb-5">
+                </p>
+                <p class="text-xs text-surface-400 mb-5">
+                    Esta accion no se puede deshacer.
+                </p>
+                @Html.AntiForgeryToken()
+                <input asp-for="DeleteSource.Id" type="hidden" />
+                <input asp-for="DeleteSource.SourceName" type="hidden" />
+                <div class="flex gap-3">
+                    <!-- Cancelar -->
+                    <button type="button" onclick="closeDeleteModal()"
+                            class="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl border border-surface-200 dark:border-surface-600 text-surface-600 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors">
+                        Cancelar
+                    </button>
+                    <!-- Eliminar -->
+                    <button type="submit"
+                            class="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors">
+                        Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

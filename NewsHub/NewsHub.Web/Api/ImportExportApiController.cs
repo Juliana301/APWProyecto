@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NewsHub.Application.Common.Models.Import;
 using NewsHub.Application.Interfaces;
 using NewsHub.Application.Interfaces.Services;
 using Newtonsoft.Json;
@@ -101,13 +102,108 @@ namespace NewsHub.Web.Api
                     .UTF8
                     .GetBytes(json);
 
+            var safeTitle =
+                item.Title
+                    .Replace(" ", "_")
+                    .Replace("/", "")
+                    .Replace("\\", "");
+
             var fileName =
-                $"news_{item.UniqueId}.json";
+                $"news_{safeTitle}_{item.UniqueId}.json";
 
             return File(
                 bytes,
                 "application/json",
                 fileName);
+        }
+
+        [HttpPost("import/news")]
+        public async Task<IActionResult> ImportNewsJson(
+            IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(
+                    "Archivo no válido.");
+            }
+
+            string json;
+
+            using (var reader =
+                new StreamReader(file.OpenReadStream()))
+            {
+                json =
+                    await reader.ReadToEndAsync();
+            }
+
+            NewsHubImportModel? model;
+
+            try
+            {
+                model =
+                    JsonConvert.DeserializeObject
+                    <NewsHubImportModel>(json);
+            }
+            catch
+            {
+                return BadRequest(
+                    "JSON inválido.");
+            }
+
+            if (model == null)
+            {
+                return BadRequest(
+                    "No se pudo leer el archivo.");
+            }
+
+            // 🔹 Validar formato NewsHub
+            if (model.newsHub.format != "NH-1.0")
+            {
+                return BadRequest(
+                    "Formato no compatible.");
+            }
+
+            // 🔹 Aquí puedes guardar en BD
+            // EJEMPLO base:
+
+            var importedNews =
+                new
+                {
+                    SourceName =
+                        model.source.name,
+
+                    Title =
+                        model.article.title,
+
+                    Description =
+                        model.article.description,
+
+                    Url =
+                        model.article.url,
+
+                    PublishedAt =
+                        model.article.publishedAt,
+
+                    Categories =
+                        model.classification.categories
+                };
+
+            // ⚠️ Aquí debes llamar tu servicio real
+            // Ejemplo:
+
+            /*
+            await _savedNewsService
+                .SaveImportedNewsAsync(
+                    importedNews);
+            */
+
+            return Ok(new
+            {
+                message =
+                    "Noticia importada correctamente.",
+                title =
+                    model.article.title
+            });
         }
     }
 }

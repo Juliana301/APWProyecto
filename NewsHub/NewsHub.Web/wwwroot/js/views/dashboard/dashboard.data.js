@@ -38,7 +38,8 @@ async function loadFeed() {
 function downloadNewsJson(uniqueId) {
 
     window.location.href =
-        `/api/ImportExportApi/export/news/${uniqueId}`;
+        `/api/ImportExportApi/export/news/${uniqueId}`,
+        `_blank`;
 
 }
 
