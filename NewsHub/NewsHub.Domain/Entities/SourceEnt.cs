@@ -69,7 +69,8 @@ namespace NewsHub.Domain.Entities
                 // =========================
 
                 var typeString =
-                    json["Type"]?.ToString();
+                    json["Type"]?.ToString()
+                    ?? "Auto";
 
                 if (!Enum.TryParse<ApiConfigType>(
                     typeString,
@@ -119,34 +120,46 @@ namespace NewsHub.Domain.Entities
                             );
 
                         break;
+
+                    case ApiConfigType.Auto:
+
+                        // Auto no requiere Root ni Mapping
+                        // Solo validamos que tenga Type
+
+                        break;
                 }
 
                 // =========================
                 // VALIDAR Mapping básico
                 // =========================
 
-                var mapping =
-                    json["Mapping"]?.AsObject();
+                // Solo validar mapping si existe
 
-                if (mapping == null)
-                    throw new ArgumentException(
-                        "Mapping debe ser un objeto."
-                    );
-
-                if (string.IsNullOrWhiteSpace(
-                    mapping["Title"]?.ToString()))
+                if (json["Mapping"] != null)
                 {
-                    throw new ArgumentException(
-                        "Mapping requiere 'Title'."
-                    );
-                }
+                    var mapping =
+                        json["Mapping"]?.AsObject();
 
-                if (string.IsNullOrWhiteSpace(
-                    mapping["Url"]?.ToString()))
-                {
-                    throw new ArgumentException(
-                        "Mapping requiere 'Url'."
-                    );
+                    if (mapping == null)
+                        throw new ArgumentException(
+                            "Mapping debe ser un objeto."
+                        );
+
+                    if (string.IsNullOrWhiteSpace(
+                        mapping["Title"]?.ToString()))
+                    {
+                        throw new ArgumentException(
+                            "Mapping requiere 'Title'."
+                        );
+                    }
+
+                    if (string.IsNullOrWhiteSpace(
+                        mapping["Url"]?.ToString()))
+                    {
+                        throw new ArgumentException(
+                            "Mapping requiere 'Url'."
+                        );
+                    }
                 }
             }
             catch (JsonException)
@@ -158,5 +171,6 @@ namespace NewsHub.Domain.Entities
 
             ApiConfigJson = apiConfigJson;
         }
+
     }
 }

@@ -49,35 +49,28 @@
                         <div class="flex flex-col gap-2 text-sm">
 
                             <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="apiTemplate" value="auto"
+                                       class="text-brand-500 focus:ring-brand-500">
+                                API Automática
+                            </label>
+
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="apiTemplate" value="autoWithKey"
+                                       class="text-brand-500 focus:ring-brand-500">
+                                API Automática con Clave
+                            </label>
+
+                            <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="radio" name="apiTemplate" value="simple"
                                        class="text-brand-500 focus:ring-brand-500">
-                                Simple API
+                                API Simple
                             </label>
 
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="apiTemplate" value="idpipeline"
+                                <input type="radio" name="apiTemplate" value="idPipeline"
                                        class="text-brand-500 focus:ring-brand-500">
-                                Id Pipeline (Hacker News)
+                                API de Pipeline de IDs
                             </label>
-
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="apiTemplate" value="apikey"
-                                       class="text-brand-500 focus:ring-brand-500">
-                                API con API Key
-                            </label>
-
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="apiTemplate" value="querykey"
-                                       class="text-brand-500 focus:ring-brand-500">
-                                API con API Key Query Param
-                            </label>
-
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="apiTemplate" value="paged"
-                                       class="text-brand-500 focus:ring-brand-500">
-                                API con Paginación
-                            </label>
-
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">

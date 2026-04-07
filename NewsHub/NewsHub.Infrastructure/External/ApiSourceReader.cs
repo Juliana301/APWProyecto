@@ -44,6 +44,9 @@ namespace NewsHub.Infrastructure.External
                     "IdPipeline" =>
                         await ReadIdPipelineAsync(source, config),
 
+                    "Auto" =>
+                        await ReadAutoAsync(source, config),
+
                     _ => new List<SourceItem>()
                 };
             }
@@ -170,6 +173,45 @@ namespace NewsHub.Infrastructure.External
         }
 
         // =========================================================
+        // AUTO READER (INTELIGENTE)
+        // =========================================================
+
+        private async Task<List<SourceItem>>
+            ReadAutoAsync(
+                SourceEnt source,
+                JObject config)
+        {
+            var items = new List<SourceItem>();
+
+            var limit =
+                config["Limit"]?.Value<int>()
+                ?? 20;
+
+            var json =
+                await GetJsonAsync(
+                    source.Url,
+                    config);
+
+            // Detectar automáticamente el array principal
+
+            var root =
+                FindRootArray(json);
+
+            if (root == null)
+                return items;
+
+            foreach (var obj in root.Take(limit))
+            {
+                var item =
+                    MapAuto(source, obj);
+
+                items.Add(item);
+            }
+
+            return items;
+        }
+
+        // =========================================================
         // MAPPING
         // =========================================================
 
@@ -227,6 +269,75 @@ namespace NewsHub.Infrastructure.External
                     },
 
                 PublishedAt = publishedAt
+            };
+        }
+
+        // =========================================================
+        // AUTO MAPPING
+        // =========================================================
+
+        private SourceItem MapAuto(
+            SourceEnt source,
+            JToken obj)
+        {
+            var title =
+                FindValue(
+                    obj,
+                    "title",
+                    "headline",
+                    "name");
+
+            var description =
+                FindValue(
+                    obj,
+                    "description",
+                    "summary",
+                    "content");
+
+            var url =
+                FindValue(
+                    obj,
+                    "url",
+                    "link");
+
+            var category =
+                FindValue(
+                    obj,
+                    "category",
+                    "section");
+
+            var date =
+                FindValue(
+                    obj,
+                    "publishedAt",
+                    "date",
+                    "createdAt",
+                    "time");
+
+            return new SourceItem
+            {
+                SourceId = source.Id,
+                SourceName = source.Name,
+                SourceType = source.ComponentType,
+
+                Title =
+                    title ?? "Sin título",
+
+                Description =
+                    description ?? "",
+
+                Url =
+                    url ?? "#",
+
+                Category =
+                    new[]
+                    {
+                category
+                ?? "General"
+                    },
+
+                PublishedAt =
+                    ParseDate(date)
             };
         }
 
@@ -399,6 +510,37 @@ namespace NewsHub.Infrastructure.External
             return obj
                 .SelectToken(path)
                 ?.ToString();
+        }
+
+        // Detectar automáticamente el array root
+        private JArray? FindRootArray(
+            JObject json)
+        {
+            foreach (var prop in json.Properties())
+            {
+                if (prop.Value is JArray arr)
+                    return arr;
+            }
+
+            return null;
+        }
+
+        // Buscar valor automáticamente por nombres comunes
+
+        private string? FindValue(
+            JToken obj,
+            params string[] candidates)
+        {
+            foreach (var name in candidates)
+            {
+                var token =
+                    obj.SelectToken($"..{name}");
+
+                if (token != null)
+                    return token.ToString();
+            }
+
+            return null;
         }
 
         // =========================================================

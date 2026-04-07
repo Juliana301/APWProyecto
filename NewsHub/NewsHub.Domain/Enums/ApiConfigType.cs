@@ -7,6 +7,7 @@ namespace NewsHub.Domain.Enums
     public enum ApiConfigType
     {
         Simple = 0,
-        IdPipeline = 1
+        IdPipeline = 1,
+        Auto = 2
     }
 }

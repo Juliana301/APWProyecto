@@ -17,13 +17,43 @@ function toggleApiConfig(type) {
     }
 }
 
-// Plantillas de ejemplo para cada tipo de API
+// ==========================================
+// TEMPLATES ESENCIALES
+// ==========================================
+
 const apiTemplates = {
 
     // =========================================
-    // SIMPLE API (sin API key)
-    // Ejemplo compatible con APIs públicas
+    // AUTO — SIN API KEY
+    // Detecta todo automáticamente
     // =========================================
+
+    auto: {
+        Type: "Auto",
+
+        Limit: 10
+    },
+
+    // =========================================
+    // AUTO — CON API KEY
+    // Muy común hoy en día
+    // =========================================
+
+    autoWithKey: {
+        Type: "Auto",
+
+        Headers: {
+            "X-Api-Key": "{{API_KEY}}"
+        },
+
+        Limit: 10
+    },
+
+    // =========================================
+    // SIMPLE — Mapping manual
+    // Para APIs que no funcionan con Auto
+    // =========================================
+
     simple: {
         Type: "Simple",
 
@@ -41,10 +71,10 @@ const apiTemplates = {
     },
 
     // =========================================
-    // ID PIPELINE (Hacker News)
-    // API real sin API key
+    // ID PIPELINE — Hacker News
     // =========================================
-    idpipeline: {
+
+    idPipeline: {
         Type: "IdPipeline",
 
         IdsUrl:
@@ -62,82 +92,7 @@ const apiTemplates = {
             PublishedAt: "time",
             Category: "type"
         }
-    },
-
-    // =========================================
-    // API con API KEY en HEADER
-    // (Ejemplo tipo Guardian / NYTimes)
-    // =========================================
-    apikey: {
-        Type: "Simple",
-
-        Root: "response.results",
-
-        Headers: {
-            "X-Api-Key": "{{API_KEY}}"
-        },
-
-        Limit: 10,
-
-        Mapping: {
-            Title: "webTitle",
-            Description: "fields.trailText",
-            Url: "webUrl",
-            PublishedAt: "webPublicationDate",
-            Category: "sectionName"
-        }
-    },
-
-    // =========================================
-    // API KEY en QUERY PARAM
-    // (MUY común: NewsAPI, GNews, Mediastack)
-    // =========================================
-    querykey: {
-        Type: "Simple",
-
-        Root: "articles",
-
-        QueryParams: {
-            "apiKey": "{{API_KEY}}",
-            "country": "us"
-        },
-
-        Limit: 10,
-
-        Mapping: {
-            Title: "title",
-            Description: "description",
-            Url: "url",
-            PublishedAt: "publishedAt",
-            Category: "source.name"
-        }
-    },
-
-    // =========================================
-    // API PAGINADA
-    // =========================================
-    paged: {
-        Type: "Simple",
-
-        Root: "articles",
-
-        QueryParams: {
-            "apiKey": "{{API_KEY}}",
-            "pageSize": "10",
-            "page": "1"
-        },
-
-        Limit: 10,
-
-        Mapping: {
-            Title: "title",
-            Description: "description",
-            Url: "url",
-            PublishedAt: "publishedAt",
-            Category: "source.name"
-        }
     }
-
 };
 
 // Event listener para selección de plantillas API
