@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using NewsHub.Application.Interfaces.Security;
+using NewsHub.Application.Interfaces.Services.Security;
 using System.Security.Cryptography;
 
 namespace NewsHub.Infrastructure.Security

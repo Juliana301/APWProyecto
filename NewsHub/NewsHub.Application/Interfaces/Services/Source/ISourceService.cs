@@ -2,7 +2,7 @@ using NewsHub.Application.Common;
 using NewsHub.Application.Common.Models;
 using NewsHub.Application.DTOs.Source;
 
-namespace NewsHub.Application.Interfaces.Services
+namespace NewsHub.Application.Interfaces.Services.Source
 {
     public interface ISourceService
     {

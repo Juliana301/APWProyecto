@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewsHub.Application.DTOs.Authentication;
 using NewsHub.Application.DTOs.User;
-using NewsHub.Application.Interfaces.Authentication;
+using NewsHub.Application.Interfaces.Services.Authentication;
 using NewsHub.Application.Interfaces.Tokens;
 using NewsHub.Web.Common.Extensions;
 using NewsHub.Web.ViewModels.Authentication;

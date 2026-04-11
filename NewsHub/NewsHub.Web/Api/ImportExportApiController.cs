@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewsHub.Application.Common.Models.Import;
-using NewsHub.Application.Interfaces;
-using NewsHub.Application.Interfaces.Services;
+using NewsHub.Application.Interfaces.Services.Source;
 using Newtonsoft.Json;
 
 namespace NewsHub.Web.Api
@@ -11,16 +10,20 @@ namespace NewsHub.Web.Api
     public class ImportExportApiController : ControllerBase
     {
         private readonly ISourceService _sourceService;
+        private readonly ISourceItemService _sourceItemService;
 
         public ImportExportApiController(
-            ISourceService sourceService)
+            ISourceService sourceService,
+            ISourceItemService sourceItemService)
         {
             _sourceService = sourceService;
+            _sourceItemService = sourceItemService;
         }
 
-        /// <summary>
-        /// Exporta una noticia individual en formato JSON propio
-        /// </summary>
+        // =====================================================
+        // EXPORT (FORMATO OFICIAL)
+        // =====================================================
+
         [HttpGet("export/news/{uniqueId}")]
         public async Task<IActionResult> ExportNewsJson(
             string uniqueId)
@@ -47,48 +50,85 @@ namespace NewsHub.Web.Api
                     "Noticia no encontrada.");
             }
 
-            // 🔹 Formato JSON propio NewsHub
+            // EXPORT FORMATO OFICIAL
             var exportObject =
                 new
                 {
-                    newsHub = new
-                    {
-                        format = "NH-1.0",
-                        exportedAt =
-                            DateTime.UtcNow
-                    },
+                    schemaVersion =
+                        "edu.univ.ingest.v1",
+
+                    exportedAt =
+                        DateTime.UtcNow,
 
                     source = new
                     {
-                        id = item.SourceId,
-                        name = item.SourceName,
+                        id =
+                            item.SourceId
+                                .ToString(),
+
+                        name =
+                            item.SourceName,
+
                         type =
                             item.SourceType
                                 .ToString()
+                                .ToLower(),
+
+                        url =
+                            item.Url,
+
+                        requiresSecret =
+                            false
                     },
 
-                    article = new
+                    normalized = new
                     {
-                        uniqueId =
+                        id =
+                            item.UniqueId,
+
+                        externalId =
                             item.UniqueId,
 
                         title =
                             item.Title,
 
-                        description =
+                        content =
                             item.Description,
+
+                        summary =
+                            item.Description,
+
+                        publishedAt =
+                            item.PublishedAt,
 
                         url =
                             item.Url,
 
-                        publishedAt =
-                            item.PublishedAt
+                        author =
+                            (string?)null,
+
+                        language =
+                            "es",
+
+                        category = new
+                        {
+                            primary =
+                                item.Category,
+
+                            secondary =
+                                new string[] { }
+                        }
                     },
 
-                    classification = new
+                    raw = new
                     {
-                        categories =
-                            item.Category
+                        format = "json",
+
+                        data = new
+                        {
+                            original =
+                                item.Description
+                        }
                     }
                 };
 
@@ -117,6 +157,10 @@ namespace NewsHub.Web.Api
                 fileName);
         }
 
+        // =====================================================
+        // IMPORT
+        // =====================================================
+
         [HttpPost("import/news")]
         public async Task<IActionResult> ImportNewsJson(
             IFormFile file)
@@ -130,41 +174,59 @@ namespace NewsHub.Web.Api
             string json;
 
             using (var reader =
-                new StreamReader(file.OpenReadStream()))
+                new StreamReader(
+                    file.OpenReadStream()))
             {
                 json =
                     await reader.ReadToEndAsync();
             }
 
-            NewsHubImportModel? model;
-
             try
             {
-                model =
-                    JsonConvert.DeserializeObject
-                    <NewsHubImportModel>(json);
+                // Detectar formato
+
+                if (json.Contains("schemaVersion"))
+                {
+                    return await ImportOfficialFormat(json);
+                }
+
+                // Se pueden agregar más formatos aquí
+
+                return BadRequest(
+                    "Formato JSON no reconocido.");
             }
             catch
             {
                 return BadRequest(
-                    "JSON inválido.");
+                    "Error procesando archivo.");
             }
+        }
+
+        // =====================================================
+        // IMPORT FORMATO OFICIAL
+        // =====================================================
+
+        private async Task<IActionResult>
+            ImportOfficialFormat(string json)
+        {
+            OfficialImportModel? model;
+
+            model =
+                JsonConvert.DeserializeObject
+                    <OfficialImportModel>(json);
 
             if (model == null)
             {
                 return BadRequest(
-                    "No se pudo leer el archivo.");
+                    "JSON oficial inválido.");
             }
 
-            // 🔹 Validar formato NewsHub
-            if (model.newsHub.format != "NH-1.0")
+            if (model.schemaVersion !=
+                "edu.univ.ingest.v1")
             {
                 return BadRequest(
-                    "Formato no compatible.");
+                    "Versión de schema no soportada.");
             }
-
-            // 🔹 Aquí puedes guardar en BD
-            // EJEMPLO base:
 
             var importedNews =
                 new
@@ -173,36 +235,31 @@ namespace NewsHub.Web.Api
                         model.source.name,
 
                     Title =
-                        model.article.title,
+                        model.normalized.title,
 
                     Description =
-                        model.article.description,
+                        model.normalized.summary,
 
                     Url =
-                        model.article.url,
+                        model.normalized.url,
 
                     PublishedAt =
-                        model.article.publishedAt,
+                        model.normalized.publishedAt,
 
                     Categories =
-                        model.classification.categories
+                        model.normalized.category.primary
                 };
 
-            // ⚠️ Aquí debes llamar tu servicio real
-            // Ejemplo:
+            // 🔹 Guardar en BD aquí
 
-            /*
-            await _savedNewsService
-                .SaveImportedNewsAsync(
-                    importedNews);
-            */
+            await Task.CompletedTask;
 
             return Ok(new
             {
                 message =
-                    "Noticia importada correctamente.",
+                    "Importación oficial exitosa.",
                 title =
-                    model.article.title
+                    model.normalized.title
             });
         }
     }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NewsHub.Application.Interfaces.Services;
+using NewsHub.Application.Interfaces.Services.Source;
 using NewsHub.Web.ViewModels.Dashboard;
 using NewsHub.Web.ViewModels.Source;
 

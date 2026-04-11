@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NewsHub.Application.Interfaces.Roles
+namespace NewsHub.Application.Interfaces.Services.Roles
 {
     public interface IUserRoleService
     {

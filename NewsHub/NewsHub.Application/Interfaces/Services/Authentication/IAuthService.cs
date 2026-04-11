@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NewsHub.Application.Interfaces.Authentication
+namespace NewsHub.Application.Interfaces.Services.Authentication
 {
     public interface IAuthService
     {

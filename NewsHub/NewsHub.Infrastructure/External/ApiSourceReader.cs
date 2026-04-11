@@ -1,4 +1,12 @@
-﻿using NewsHub.Application.Common.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using NewsHub.Application.Common.Models;
 using NewsHub.Application.Interfaces;
 using NewsHub.Domain.Entities;
 using NewsHub.Domain.Enums;
@@ -30,23 +38,14 @@ namespace NewsHub.Infrastructure.External
 
             try
             {
-                var config =
-                    JObject.Parse(source.ApiConfigJson);
-
-                var readerType =
-                    config["Type"]?.ToString();
+                var config = JObject.Parse(source.ApiConfigJson);
+                var readerType = config["Type"]?.ToString() ?? "Auto";
 
                 items = readerType switch
                 {
-                    "Simple" =>
-                        await ReadSimpleAsync(source, config),
-
-                    "IdPipeline" =>
-                        await ReadIdPipelineAsync(source, config),
-
-                    "Auto" =>
-                        await ReadAutoAsync(source, config),
-
+                    "Simple" => await ReadSimpleAsync(source, config),
+                    "IdPipeline" => await ReadIdPipelineAsync(source, config),
+                    "Auto" => await ReadAutoAsync(source, config),
                     _ => new List<SourceItem>()
                 };
             }
@@ -63,43 +62,22 @@ namespace NewsHub.Infrastructure.External
         // SIMPLE READER
         // =========================================================
 
-        private async Task<List<SourceItem>>
-            ReadSimpleAsync(
-                SourceEnt source,
-                JObject config)
+        private async Task<List<SourceItem>> ReadSimpleAsync(SourceEnt source, JObject config)
         {
             var items = new List<SourceItem>();
+            var root = config["Root"]?.ToString();
+            var mapping = config["Mapping"];
+            var limit = config["Limit"]?.Value<int>() ?? 20;
 
-            var root =
-                config["Root"]?.ToString();
+            var token = await GetResponseTokenAsync(source.Url, config);
+            var rootArray = GetRootArray(token, root);
 
-            var mapping =
-                config["Mapping"];
-
-            var limit =
-                config["Limit"]?.Value<int>()
-                ?? 20;
-
-            var json =
-                await GetJsonAsync(
-                    source.Url,
-                    config);
-
-            var elements =
-                json[root]
-                ?.Take(limit);
-
-            if (elements == null)
+            if (rootArray == null)
                 return items;
 
-            foreach (var element in elements)
+            foreach (var element in rootArray.Take(limit))
             {
-                var item =
-                    MapItem(
-                        source,
-                        element,
-                        mapping);
-
+                var item = MapItem(source, element, mapping);
                 items.Add(item);
             }
 
@@ -110,102 +88,78 @@ namespace NewsHub.Infrastructure.External
         // ID PIPELINE READER
         // =========================================================
 
-        private async Task<List<SourceItem>>
-            ReadIdPipelineAsync(
-                SourceEnt source,
-                JObject config)
+        private async Task<List<SourceItem>> ReadIdPipelineAsync(SourceEnt source, JObject config)
         {
-            var items =
-                new List<SourceItem>();
+            var items = new List<SourceItem>();
+            var idsUrl = config["IdsUrl"]?.ToString();
+            var template = config["ItemUrlTemplate"]?.ToString();
+            var limit = config["Limit"]?.Value<int>() ?? 20;
+            var mapping = config["Mapping"];
 
-            var idsUrl =
-                config["IdsUrl"]?.ToString();
-
-            var template =
-                config["ItemUrlTemplate"]
-                ?.ToString();
-
-            var limit =
-                config["Limit"]?.Value<int>()
-                ?? 20;
-
-            var mapping =
-                config["Mapping"];
-
-            if (string.IsNullOrWhiteSpace(idsUrl) ||
-                string.IsNullOrWhiteSpace(template))
+            if (string.IsNullOrWhiteSpace(idsUrl) || string.IsNullOrWhiteSpace(template))
                 return items;
 
-            // Obtener IDs
+            var idsArray = await GetArrayAsync(idsUrl, config);
+            var ids = idsArray.Take(limit);
 
-            var idsArray =
-                await GetArrayAsync(
-                    idsUrl,
-                    config);
-
-            var ids =
-                idsArray.Take(limit);
-
-            // Obtener items
-
-            foreach (var id in ids)
+            var semaphore = new SemaphoreSlim(5);
+            var tasks = ids.Select(async id =>
             {
-                var url =
-                    template.Replace(
-                        "{id}",
-                        id.ToString());
+                await semaphore.WaitAsync();
+                try
+                {
+                    var url = template.Replace("{id}", id.ToString());
 
-                var obj =
-                    await GetJsonAsync(
-                        url,
-                        config);
+                    try
+                    {
+                        var token = await GetResponseTokenAsync(url, config);
+                        if (token is not JObject obj)
+                            return null;
 
-                var item =
-                    MapItem(
-                        source,
-                        obj,
-                        mapping);
+                        var type = obj["type"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(type) && !type.Equals("story", StringComparison.OrdinalIgnoreCase))
+                            return null;
 
-                items.Add(item);
-            }
+                        var link = obj["url"]?.ToString();
+                        if (string.IsNullOrWhiteSpace(link))
+                            return null;
 
-            return items;
+                        return MapItem(source, obj, mapping);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+
+            var results = await Task.WhenAll(tasks);
+            return results.Where(x => x != null).Select(x => x!).ToList();
         }
 
         // =========================================================
         // AUTO READER (INTELIGENTE)
         // =========================================================
 
-        private async Task<List<SourceItem>>
-            ReadAutoAsync(
-                SourceEnt source,
-                JObject config)
+        private async Task<List<SourceItem>> ReadAutoAsync(SourceEnt source, JObject config)
         {
             var items = new List<SourceItem>();
+            var limit = config["Limit"]?.Value<int>() ?? 20;
+            var rootPath = config["Root"]?.ToString();
 
-            var limit =
-                config["Limit"]?.Value<int>()
-                ?? 20;
+            var token = await GetResponseTokenAsync(source.Url, config);
+            var rootArray = GetRootArray(token, rootPath);
 
-            var json =
-                await GetJsonAsync(
-                    source.Url,
-                    config);
-
-            // Detectar automáticamente el array principal
-
-            var root =
-                FindRootArray(json);
-
-            if (root == null)
+            if (rootArray == null)
                 return items;
 
-            foreach (var obj in root.Take(limit))
+            foreach (var itemObj in rootArray.Take(limit))
             {
-                var item =
-                    MapAuto(source, obj);
-
-                items.Add(item);
+                items.Add(MapAuto(source, itemObj));
             }
 
             return items;
@@ -276,68 +230,24 @@ namespace NewsHub.Infrastructure.External
         // AUTO MAPPING
         // =========================================================
 
-        private SourceItem MapAuto(
-            SourceEnt source,
-            JToken obj)
+        private SourceItem MapAuto(SourceEnt source, JToken obj)
         {
-            var title =
-                FindValue(
-                    obj,
-                    "title",
-                    "headline",
-                    "name");
-
-            var description =
-                FindValue(
-                    obj,
-                    "description",
-                    "summary",
-                    "content");
-
-            var url =
-                FindValue(
-                    obj,
-                    "url",
-                    "link");
-
-            var category =
-                FindValue(
-                    obj,
-                    "category",
-                    "section");
-
-            var date =
-                FindValue(
-                    obj,
-                    "publishedAt",
-                    "date",
-                    "createdAt",
-                    "time");
+            var title = FindValue(obj, "title", "headline", "name", "headlineText", "subject");
+            var description = FindValue(obj, "description", "summary", "content", "body", "excerpt");
+            var url = FindValue(obj, "url", "link", "href", "webUrl", "uri");
+            var category = FindValue(obj, "category", "section", "tags", "topic", "channel", "genres");
+            var date = FindValue(obj, "publishedAt", "published_at", "published", "date", "createdAt", "updatedAt", "timestamp", "time");
 
             return new SourceItem
             {
                 SourceId = source.Id,
                 SourceName = source.Name,
                 SourceType = source.ComponentType,
-
-                Title =
-                    title ?? "Sin título",
-
-                Description =
-                    description ?? "",
-
-                Url =
-                    url ?? "#",
-
-                Category =
-                    new[]
-                    {
-                category
-                ?? "General"
-                    },
-
-                PublishedAt =
-                    ParseDate(date)
+                Title = title ?? "Sin título",
+                Description = description ?? "",
+                Url = url ?? "#",
+                Category = new[] { category ?? "General" },
+                PublishedAt = ParseDate(date)
             };
         }
 
@@ -345,152 +255,241 @@ namespace NewsHub.Infrastructure.External
         // HTTP HELPERS
         // =========================================================
 
-        private async Task<JObject>
-            GetJsonAsync(
-                string url,
-                JObject config)
+        private async Task<JToken> GetResponseTokenAsync(string url, JObject config)
         {
-            var request =
-                BuildRequest(url, config);
+            var request = BuildRequest(url, config);
+            var response = await _httpClient.SendAsync(request);
+            var json = await response.Content.ReadAsStringAsync();
 
-            var response =
-                await _httpClient
-                    .SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    $"API ERROR {response.StatusCode}\n{json}");
+            }
 
-            response
-                .EnsureSuccessStatusCode();
-
-            var json =
-                await response
-                    .Content
-                    .ReadAsStringAsync();
-
-            return JObject.Parse(json);
+            return JToken.Parse(json);
         }
 
-        private async Task<JArray>
-            GetArrayAsync(
-                string url,
-                JObject config)
+        private async Task<JObject> GetJsonAsync(string url, JObject config)
         {
-            var request =
-                BuildRequest(url, config);
+            var token = await GetResponseTokenAsync(url, config);
+            return token as JObject ?? throw new InvalidOperationException("Response JSON is not an object.");
+        }
 
-            var response =
-                await _httpClient
-                    .SendAsync(request);
-
-            response
-                .EnsureSuccessStatusCode();
-
-            var json =
-                await response
-                    .Content
-                    .ReadAsStringAsync();
-
-            return JArray.Parse(json);
+        private async Task<JArray> GetArrayAsync(string url, JObject config)
+        {
+            var token = await GetResponseTokenAsync(url, config);
+            var array = GetRootArray(token, null);
+            return array ?? throw new InvalidOperationException("Response JSON does not contain an array.");
         }
 
         // =========================================================
         // REQUEST BUILDER
         // =========================================================
 
-        private HttpRequestMessage
-            BuildRequest(
-                string url,
-                JObject config)
+        private HttpRequestMessage BuildRequest(string url, JObject config)
         {
-            // =========================
-            // Query Params
-            // =========================
+            var requestConfig =
+        config["Request"] as JObject;
+
+            // 🔥 IMPORTANTE
+            url =
+                ResolveEnvironmentVariable(url);
 
             var queryParams =
-                config["QueryParams"]
-                as JObject;
+                MergeObjects(
+                    config["QueryParams"] as JObject,
+                    requestConfig?["QueryParams"] as JObject);
 
             if (queryParams != null)
-            {
-                var uriBuilder =
-                    new UriBuilder(url);
-
-                var query =
-                    System.Web
-                    .HttpUtility
-                    .ParseQueryString(
-                        uriBuilder.Query);
-
-                foreach (var prop in queryParams)
-                {
-                    var value =
-                        ResolveEnvironmentVariable(
-                            prop.Value?.ToString());
-
-                    if (!string.IsNullOrWhiteSpace(value))
-                    {
-                        query[prop.Key] = value;
-                    }
-                }
-
-                uriBuilder.Query =
-                    query.ToString();
-
                 url =
-                    uriBuilder.ToString();
-            }
+                    AddQueryString(
+                        url,
+                        queryParams);
+
+            var methodText =
+                requestConfig?["Method"]?.ToString()
+                ?? "GET";
 
             var request =
                 new HttpRequestMessage(
-                    HttpMethod.Get,
+                    new HttpMethod(
+                        methodText.ToUpperInvariant()),
                     url);
 
-            // =========================
-            // Headers
-            // =========================
-
             var headers =
-                config["Headers"]
-                as JObject;
+                MergeObjects(
+                    config["Headers"] as JObject,
+                    requestConfig?["Headers"] as JObject);
 
-            if (headers != null)
+            AddHeaders(request, headers);
+
+            if (requestConfig != null)
             {
-                foreach (var header in headers)
-                {
-                    var value =
-                        ResolveEnvironmentVariable(
-                            header.Value?.ToString());
+                AddAuthentication(
+                    request,
+                    requestConfig["Auth"]);
 
-                    if (!string.IsNullOrWhiteSpace(value))
-                    {
-                        request.Headers.Add(
-                            header.Key,
-                            value);
-                    }
-                }
+                AddRequestBody(
+                    request,
+                    requestConfig);
             }
 
             return request;
+        }
+
+        private static JObject? MergeObjects(JObject? baseObject, JObject? overrideObject)
+        {
+            if (baseObject == null && overrideObject == null)
+                return null;
+
+            var result = new JObject();
+
+            if (baseObject != null)
+            {
+                foreach (var prop in baseObject)
+                    result[prop.Key] = prop.Value;
+            }
+
+            if (overrideObject != null)
+            {
+                foreach (var prop in overrideObject)
+                    result[prop.Key] = prop.Value;
+            }
+
+            return result;
+        }
+
+        private string AddQueryString(string url, JObject queryParams)
+        {
+            var query =
+                System.Web.HttpUtility.ParseQueryString("");
+
+            foreach (var param in queryParams)
+            {
+                var value =
+                    ResolveEnvironmentVariable(
+                        param.Value?.ToString());
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    query[param.Key] =
+                        value;
+                }
+            }
+
+            var separator =
+                url.Contains("?") ? "&" : "?";
+
+            return url +
+                   separator +
+                   query.ToString();
+        }
+
+        private void AddHeaders(HttpRequestMessage request, JObject? headers)
+        {
+            if (headers == null)
+                return;
+
+            foreach (var header in headers)
+            {
+                var value = ResolveEnvironmentVariable(header.Value?.ToString());
+                if (string.IsNullOrWhiteSpace(value))
+                    continue;
+
+                if (!request.Headers.TryAddWithoutValidation(header.Key, value) && request.Content != null)
+                {
+                    request.Content.Headers.TryAddWithoutValidation(header.Key, value);
+                }
+            }
+        }
+
+        private void AddAuthentication(HttpRequestMessage request, JToken? authToken)
+        {
+            if (authToken == null)
+                return;
+
+            if (authToken is JObject authObj)
+            {
+                var authType = authObj["Type"]?.ToString();
+                var authValue = ResolveEnvironmentVariable(authObj["Value"]?.ToString());
+                if (string.IsNullOrWhiteSpace(authValue))
+                    return;
+
+                if (authType?.Equals("Bearer", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authValue);
+                }
+                else if (authType?.Equals("Basic", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(authValue));
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64);
+                }
+                else
+                {
+                    request.Headers.Authorization = AuthenticationHeaderValue.Parse(authValue);
+                }
+            }
+            else
+            {
+                var authValue = ResolveEnvironmentVariable(authToken.ToString());
+                if (!string.IsNullOrWhiteSpace(authValue))
+                    request.Headers.Authorization = AuthenticationHeaderValue.Parse(authValue);
+            }
+        }
+
+        private void AddRequestBody(HttpRequestMessage request, JObject requestConfig)
+        {
+            if (request.Method == HttpMethod.Get || request.Method == HttpMethod.Head)
+                return;
+
+            var bodyToken = requestConfig["Body"];
+            if (bodyToken == null)
+                return;
+
+            string content;
+            if (bodyToken.Type == JTokenType.Object || bodyToken.Type == JTokenType.Array)
+            {
+                content = bodyToken.ToString();
+            }
+            else
+            {
+                content = ResolveEnvironmentVariable(bodyToken.ToString()) ?? string.Empty;
+            }
+
+            var contentType = requestConfig["ContentType"]?.ToString() ?? "application/json";
+            request.Content = new StringContent(content, Encoding.UTF8, contentType);
         }
 
         // =========================================================
         // ENVIRONMENT VARIABLE SUPPORT
         // =========================================================
 
-        private string? ResolveEnvironmentVariable(
-            string? value)
+        private string? ResolveEnvironmentVariable(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 return value;
 
-            if (value.StartsWith("{{") &&
-                value.EndsWith("}}"))
-            {
-                var envName =
-                    value
-                        .Replace("{{", "")
-                        .Replace("}}", "");
+            var matches =
+                System.Text.RegularExpressions.Regex.Matches(
+                    value,
+                    @"\{\{(.*?)\}\}");
 
-                return Environment
-                    .GetEnvironmentVariable(envName);
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                var varName =
+                    match.Groups[1].Value;
+
+                var envValue =
+                    Environment.GetEnvironmentVariable(varName);
+
+                if (!string.IsNullOrWhiteSpace(envValue))
+                {
+                    value =
+                        value.Replace(
+                            match.Value,
+                            envValue);
+                }
             }
 
             return value;
@@ -500,21 +499,57 @@ namespace NewsHub.Infrastructure.External
         // JSON HELPERS
         // =========================================================
 
-        private string? GetValue(
-            JToken obj,
-            string? path)
+        private string? GetValue(JToken obj, string? path)
         {
             if (string.IsNullOrWhiteSpace(path))
                 return null;
 
-            return obj
-                .SelectToken(path)
-                ?.ToString();
+            return obj.SelectToken(path)?.ToString();
         }
 
         // Detectar automáticamente el array root
-        private JArray? FindRootArray(
-            JObject json)
+        private JArray? GetRootArray(JToken token, string? rootPath = null)
+        {
+            if (!string.IsNullOrWhiteSpace(rootPath))
+            {
+                var selected = token.SelectToken(rootPath);
+                if (selected is JArray selectedArray)
+                    return selectedArray;
+
+                if (selected is JObject selectedObject)
+                    return FindRootArray(selectedObject);
+            }
+
+            if (token is JArray array)
+                return array;
+
+            if (token is JObject obj)
+            {
+                if (obj["results"] is JArray results)
+                    return results;
+                if (obj["data"] is JArray data)
+                    return data;
+                if (obj["items"] is JArray items)
+                    return items;
+                if (obj["articles"] is JArray articles)
+                    return articles;
+                if (obj["entries"] is JArray entries)
+                    return entries;
+                if (obj["response"] is JObject responseObj)
+                {
+                    if (responseObj["data"] is JArray responseData)
+                        return responseData;
+                    if (responseObj["items"] is JArray responseItems)
+                        return responseItems;
+                }
+
+                return FindRootArray(obj);
+            }
+
+            return null;
+        }
+
+        private JArray? FindRootArray(JObject json)
         {
             foreach (var prop in json.Properties())
             {
@@ -522,22 +557,45 @@ namespace NewsHub.Infrastructure.External
                     return arr;
             }
 
+            foreach (var prop in json.Properties())
+            {
+                if (prop.Value is JObject nested)
+                {
+                    var nestedArray = FindRootArray(nested);
+                    if (nestedArray != null)
+                        return nestedArray;
+                }
+            }
+
             return null;
         }
 
         // Buscar valor automáticamente por nombres comunes
 
-        private string? FindValue(
-            JToken obj,
-            params string[] candidates)
+        private string? FindValue(JToken obj, params string[] candidates)
         {
             foreach (var name in candidates)
             {
-                var token =
-                    obj.SelectToken($"..{name}");
+                if (string.IsNullOrWhiteSpace(name))
+                    continue;
 
-                if (token != null)
-                    return token.ToString();
+                if (name.Contains('.') || name.Contains('['))
+                {
+                    var token = obj.SelectToken(name);
+                    if (token != null)
+                        return token.ToString();
+                }
+
+                if (obj is JContainer container)
+                {
+                    var property = container
+                        .DescendantsAndSelf()
+                        .OfType<JProperty>()
+                        .FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+
+                    if (property != null)
+                        return property.Value.ToString();
+                }
             }
 
             return null;
@@ -547,31 +605,26 @@ namespace NewsHub.Infrastructure.External
         // DATE HELPERS
         // =========================================================
 
-        private DateTime ParseDate(
-            string? value)
+        private DateTime ParseDate(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 return DateTime.UtcNow;
 
-            // Unix timestamp
+            var text = value.Trim();
 
-            if (long.TryParse(
-                value,
-                out var unix))
+            if (long.TryParse(text, out var unix))
             {
-                return DateTimeOffset
-                    .FromUnixTimeSeconds(unix)
-                    .UtcDateTime;
+                if (text.Length >= 13)
+                    return DateTimeOffset.FromUnixTimeMilliseconds(unix).UtcDateTime;
+
+                return DateTimeOffset.FromUnixTimeSeconds(unix).UtcDateTime;
             }
 
-            // ISO Date
+            if (DateTimeOffset.TryParse(text, out var offset))
+                return offset.UtcDateTime;
 
-            if (DateTime.TryParse(
-                value,
-                out var date))
-            {
-                return date;
-            }
+            if (DateTime.TryParse(text, out var date))
+                return DateTime.SpecifyKind(date, DateTimeKind.Utc);
 
             return DateTime.UtcNow;
         }

@@ -3,12 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using NewsHub.Application.Configuration;
 using NewsHub.Application.External;
 using NewsHub.Application.Interfaces;
-using NewsHub.Application.Interfaces.Authentication;
 using NewsHub.Application.Interfaces.Notifications;
 using NewsHub.Application.Interfaces.Persistence;
 using NewsHub.Application.Interfaces.Roles;
-using NewsHub.Application.Interfaces.Security;
-using NewsHub.Application.Interfaces.Services;
+using NewsHub.Application.Interfaces.Services.Authentication;
+using NewsHub.Application.Interfaces.Services.Roles;
+using NewsHub.Application.Interfaces.Services.Security;
+using NewsHub.Application.Interfaces.Services.Source;
 using NewsHub.Application.Interfaces.Tokens;
 using NewsHub.Application.Services.Authentication;
 using NewsHub.Application.Services.Roles;
@@ -116,6 +117,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ISourceRepository, SourceRepository>();
+builder.Services.AddScoped<ISourceItemRepository, SourceItemRepository>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 
@@ -126,6 +128,7 @@ builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepo
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<ISourceService, SourceService>();
+builder.Services.AddScoped<ISourceItemService, SourceItemService>();
 builder.Services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService>();
 
 

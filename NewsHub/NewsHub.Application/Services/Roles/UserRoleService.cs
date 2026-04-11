@@ -1,6 +1,7 @@
 ﻿using NewsHub.Application.Common;
 using NewsHub.Application.Interfaces.Persistence;
 using NewsHub.Application.Interfaces.Roles;
+using NewsHub.Application.Interfaces.Services.Roles;
 using NewsHub.Domain.Entities;
 using NewsHub.Domain.Interfaces.Repositories;
 

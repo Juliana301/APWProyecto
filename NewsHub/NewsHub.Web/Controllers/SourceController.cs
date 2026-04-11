@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewsHub.Application.Common;
 using NewsHub.Application.DTOs.Source;
-using NewsHub.Application.Interfaces.Services;
+using NewsHub.Application.Interfaces.Services.Source;
 using NewsHub.Web.Common.Extensions;
 using NewsHub.Web.ViewModels.Dashboard;
 

@@ -3,7 +3,7 @@ using NewsHub.Application.Common.Models;
 using NewsHub.Application.DTOs.Source;
 using NewsHub.Application.External;
 using NewsHub.Application.Interfaces.Persistence;
-using NewsHub.Application.Interfaces.Services;
+using NewsHub.Application.Interfaces.Services.Source;
 using NewsHub.Domain.Entities;
 using NewsHub.Domain.Interfaces.Repositories;
 using System.ComponentModel;

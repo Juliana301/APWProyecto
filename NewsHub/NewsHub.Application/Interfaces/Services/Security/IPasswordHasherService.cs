@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NewsHub.Application.Interfaces.Security
+namespace NewsHub.Application.Interfaces.Services.Security
 {
     public interface IPasswordHasherService
     {
