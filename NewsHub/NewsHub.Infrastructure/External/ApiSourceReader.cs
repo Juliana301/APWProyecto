@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using NewsHub.Application.Common.Interfaces;
 using NewsHub.Application.Common.Models;
 using NewsHub.Application.Interfaces;
 using NewsHub.Domain.Entities;
@@ -17,10 +13,12 @@ namespace NewsHub.Infrastructure.External
     public class ApiSourceReader : ISourceReader
     {
         private readonly HttpClient _httpClient;
+        private readonly ICacheService _cache;
 
-        public ApiSourceReader(HttpClient httpClient)
+        public ApiSourceReader(HttpClient httpClient, ICacheService cache)
         {
             _httpClient = httpClient;
+            _cache = cache;
         }
 
         public SourceType Type => SourceType.Api;
@@ -255,19 +253,36 @@ namespace NewsHub.Infrastructure.External
         // HTTP HELPERS
         // =========================================================
 
-        private async Task<JToken> GetResponseTokenAsync(string url, JObject config)
+        private async Task<JToken> GetResponseTokenAsync(
+            string url,
+            JObject config)
         {
-            var request = BuildRequest(url, config);
-            var response = await _httpClient.SendAsync(request);
-            var json = await response.Content.ReadAsStringAsync();
+            var cacheMinutes =
+                config["CacheMinutes"]?.Value<int>()
+                ?? 5;
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception(
-                    $"API ERROR {response.StatusCode}\n{json}");
-            }
+            var cacheKey =
+                $"api_cache_{url}_{config.ToString().GetHashCode()}";
 
-            return JToken.Parse(json);
+            return await _cache.GetOrCreateAsync(
+                cacheKey,
+                async () =>
+                {
+                    var request =
+                        BuildRequest(url, config);
+
+                    var response =
+                        await _httpClient.SendAsync(request);
+
+                    response.EnsureSuccessStatusCode();
+
+                    var json =
+                        await response.Content
+                            .ReadAsStringAsync();
+
+                    return JToken.Parse(json);
+                },
+                cacheMinutes);
         }
 
         private async Task<JObject> GetJsonAsync(string url, JObject config)

@@ -14,4 +14,8 @@
     <ProjectReference Include="..\NewsHub.Domain\NewsHub.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\Interfaces\" />
+  </ItemGroup>
+
 </Project>

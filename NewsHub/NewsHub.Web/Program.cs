@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using NewsHub.Application.Common.Interfaces;
 using NewsHub.Application.Configuration;
 using NewsHub.Application.External;
 using NewsHub.Application.Interfaces;
@@ -18,6 +19,7 @@ using NewsHub.Application.Services.Tokens;
 using NewsHub.Domain.Interfaces.Repositories;
 using NewsHub.Domain.Interfaces.Repositories.ErrorCatch;
 using NewsHub.Domain.Interfaces.Repositories.Tokens;
+using NewsHub.Infrastructure.Catching;
 using NewsHub.Infrastructure.Data;
 using NewsHub.Infrastructure.Email.AzureEmail;
 using NewsHub.Infrastructure.External;
@@ -131,6 +133,13 @@ builder.Services.AddScoped<ISourceService, SourceService>();
 builder.Services.AddScoped<ISourceItemService, SourceItemService>();
 builder.Services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService>();
 
+// ======================================================
+// CACHE
+// ======================================================
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 
 // ======================================================
 // PARSERS
