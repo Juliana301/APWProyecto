@@ -40,7 +40,14 @@ function sourceColor(type) {
 
 // Crear tarjeta
 function createCard(item, isSaved) {
-    const tagHtml = item.tags.map(t => `<span class="px-2 py-0.5 text-xs rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400">${t}</span>`).join('');
+    const tagHtml =
+        (Array.isArray(item.tags)
+            ? item.tags
+            : [item.tags])
+            .map(t =>
+                `<span class="px-2 py-0.5 text-xs rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400">${t}</span>`
+            )
+            .join('');
     const actionBtn = isSaved
         ? `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Eliminar</button>`
         : `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"><i data-lucide="bookmark" class="w-3.5 h-3.5"></i>Guardar</button>`;

@@ -48,40 +48,5 @@ namespace NewsHub.Web.Controllers
         {
             return View();
         }
-
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetFeedJson()
-        {
-            var result =
-                await _sourceService
-                    .ReadAllFeedsAsync();
-
-            if (!result.Success || result.Data == null)
-                return Json(new List<object>());
-
-            var json =
-                result.Data
-                    .OrderByDescending(x => x.PublishedAt)
-                    .Select((item, index) => new
-                    {
-                        id = item.UniqueId, // ID único basado en el SourceId y el hash de la URL
-
-                        source = item.SourceName ?? "NOTFOUND", // Nombre de la fuente, o "NOTFOUND" si no se proporciona
-
-                        type = item.SourceType.ToString(), // Tipo de fuente (RSS, API, etc.)
-
-                        title = item.Title, // Título de la noticia
-
-                        description = item.Description, // Descripción de la noticia
-
-                        date = item.PublishedAt
-                            .ToString("yyyy-MM-dd"),
-
-                        tags = item.Category // Categorías o etiquetas asociadas a la noticia
-                    });
-
-            return Json(json);
-        }
     }
 }

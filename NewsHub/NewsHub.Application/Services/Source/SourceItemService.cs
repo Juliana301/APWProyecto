@@ -1,4 +1,5 @@
-﻿using NewsHub.Application.Interfaces.Persistence;
+﻿using NewsHub.Application.Common;
+using NewsHub.Application.Interfaces.Persistence;
 using NewsHub.Application.Interfaces.Services;
 using NewsHub.Application.Interfaces.Services.Source;
 using NewsHub.Domain.Entities;
@@ -25,12 +26,12 @@ namespace NewsHub.Application.Services.Source
         /// <param name="sourceId">El ID de la fuente del item</param>
         /// <param name="json">El contenido del item en formato JSON</param>
         /// <returns>Un valor booleano que indica si el item fue guardado exitosamente</returns>
-        public async Task<bool> SaveAsync(
+        public async Task<Result<bool>> SaveAsync(
             int sourceId,
             string json)
         {
             if (string.IsNullOrWhiteSpace(json))
-                return false;
+                return Result<bool>.Fail("El contenido del item está vacío.", TypeMessage.Warning);
 
             try
             {
@@ -40,7 +41,7 @@ namespace NewsHub.Application.Services.Source
                         .ExistsByJsonAsync(json);
 
                 if (exists)
-                    return false;
+                    return Result<bool>.Fail("El item ya existe.", TypeMessage.Warning);
 
                 var item =
                     new SourceItemEnt(
@@ -52,11 +53,11 @@ namespace NewsHub.Application.Services.Source
 
                 await _unitOfWork.SaveChangesAsync();
 
-                return true;
+                return Result<bool>.Ok(true, "Item guardado exitosamente.");
             }
             catch
             {
-                return false;
+                return Result<bool>.Fail("Ocurrió un error al guardar el item.", TypeMessage.Error);
             }
         }
 
@@ -64,9 +65,23 @@ namespace NewsHub.Application.Services.Source
         /// Obtener los últimos 100 items guardados (puede ser modificado para paginación)
         /// </summary>
         /// <returns>Lista de items guardados</returns>
-        public async Task<List<SourceItemEnt>> GetSavedAsync()
+        public async Task<Result<List<SourceItemEnt>>> GetSavedAsync()
         {
-            return await _repository.GetLatestAsync(100);
+            try
+            {
+                var sourcesSaved = await _repository.GetLatestAsync(100);
+
+                if (sourcesSaved == null)
+                {
+                    return Result<List<SourceItemEnt>>.Fail("No se encontraron items guardados.", TypeMessage.Warning);
+                }
+
+                return Result<List<SourceItemEnt>>.Ok(sourcesSaved, "Items guardados obtenidos exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                return Result<List<SourceItemEnt>>.Fail("Ocurrió un error al obtener los items guardados.", TypeMessage.Error);
+            }
         }
 
 

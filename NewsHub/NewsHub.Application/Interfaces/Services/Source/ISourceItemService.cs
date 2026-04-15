@@ -1,4 +1,5 @@
-﻿using NewsHub.Domain.Entities;
+﻿using NewsHub.Application.Common;
+using NewsHub.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,11 +8,11 @@ namespace NewsHub.Application.Interfaces.Services.Source
 {
     public interface ISourceItemService
     {
-        Task<bool> SaveAsync(
+        Task<Result<bool>> SaveAsync(
             int sourceId,
             string json);
 
-        Task<List<SourceItemEnt>> GetSavedAsync();
+        Task<Result<List<SourceItemEnt>>> GetSavedAsync();
 
         Task<int> ImportAsync(
             int sourceId,

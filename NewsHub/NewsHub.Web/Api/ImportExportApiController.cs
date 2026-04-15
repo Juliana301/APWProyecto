@@ -195,10 +195,10 @@ namespace NewsHub.Web.Api
                 return BadRequest(
                     "Formato JSON no reconocido.");
             }
-            catch
+            catch (Exception ex)
             {
                 return BadRequest(
-                    "Error procesando archivo.");
+                    $"Error procesando archivo: {ex.Message}");
             }
         }
 
@@ -207,11 +207,9 @@ namespace NewsHub.Web.Api
         // =====================================================
 
         private async Task<IActionResult>
-            ImportOfficialFormat(string json)
+    ImportOfficialFormat(string json)
         {
-            OfficialImportModel? model;
-
-            model =
+            var model =
                 JsonConvert.DeserializeObject
                     <OfficialImportModel>(json);
 
@@ -228,31 +226,72 @@ namespace NewsHub.Web.Api
                     "Versión de schema no soportada.");
             }
 
+            if (model.source == null)
+            {
+                return BadRequest(
+                    "Source inválido.");
+            }
+
+            if (model.normalized == null)
+            {
+                return BadRequest(
+                    "Normalized inválido.");
+            }
+
             var importedNews =
                 new
                 {
-                    SourceName =
+                    id =
+                        model.normalized.id,
+
+                    source =
                         model.source.name,
 
-                    Title =
+                    type =
+                        model.source.type,
+
+                    title =
                         model.normalized.title,
 
-                    Description =
+                    description =
                         model.normalized.summary,
 
-                    Url =
-                        model.normalized.url,
+                    date =
+                        model.normalized
+                            .publishedAt
+                            .ToString("yyyy-MM-dd"),
 
-                    PublishedAt =
-                        model.normalized.publishedAt,
-
-                    Categories =
-                        model.normalized.category.primary
+                    tags =
+                        new[]
+                        {
+                            model.normalized
+                                .category.primary
+                        }
+                        .Concat(
+                            model.normalized
+                                .category.secondary ?? []
+                        )
+                        .ToArray()
                 };
 
-            // 🔹 Guardar en BD aquí
+            var savedJson =
+                JsonConvert.SerializeObject(
+                    importedNews);
 
-            await Task.CompletedTask;
+            // SOURCE FIJO (temporal)
+            var sourceId = 1;
+
+            var result =
+                await _sourceItemService
+                    .SaveAsync(
+                        sourceId,
+                        savedJson);
+
+            if (!result.Success)
+            {
+                return BadRequest(
+                    "Error guardando noticia.");
+            }
 
             return Ok(new
             {
