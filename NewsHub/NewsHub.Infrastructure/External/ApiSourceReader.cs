@@ -307,7 +307,7 @@ namespace NewsHub.Infrastructure.External
             var requestConfig =
         config["Request"] as JObject;
 
-            // 🔥 IMPORTANTE
+            // IMPORTANTE
             url =
                 ResolveEnvironmentVariable(url);
 

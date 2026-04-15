@@ -22,7 +22,7 @@ namespace NewsHub.Web.Api
 
         [HttpGet("savedfeed")]
         public async Task<IActionResult>
-    GetSavedFeedJson()
+            GetSavedFeedJson()
         {
             var result =
                 await _sourceItemService
@@ -113,6 +113,41 @@ namespace NewsHub.Web.Api
                     .Where(x => x != null);
 
             return Ok(json);
+        }
+
+        [HttpPost("save")]
+        public async Task<IActionResult> SaveAsync(
+            [FromBody] SavedSourceDto dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest("DTO inválido.");
+            }
+
+            if (dto.SourceId <= 0)
+            {
+                return BadRequest("SourceId inválido.");
+            }
+
+            var json =
+                JsonConvert.SerializeObject(dto);
+
+            var result =
+                await _sourceItemService
+                    .SaveAsync(
+                        dto.SourceId,
+                        json);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(new
+            {
+                message = "Noticia guardada.",
+                title = dto.title
+            });
         }
     }
 }

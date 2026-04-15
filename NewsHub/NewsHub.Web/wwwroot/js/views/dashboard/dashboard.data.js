@@ -36,7 +36,6 @@ async function loadFeed() {
         mockNews =
             await response.json();
 
-        // 🔧 FIX
         renderFeed();
 
     } catch (error) {
@@ -79,8 +78,9 @@ async function loadSavedItems() {
         savedItems =
             await response.json();
 
-        // 🔧 FIX
         renderSaved();
+
+        renderFeed();
 
     } catch (error) {
 
@@ -98,4 +98,53 @@ function downloadNewsJson(uniqueId) {
     window.location.href =
         `/api/ImportExportApi/export/news/${uniqueId}`;
 
+}
+
+// ===== SAVE NEWS =====
+async function saveNews(uniqueId) {
+
+    try {
+
+        // Buscar noticia en feed
+        const item =
+            mockNews.find(
+                x => x.id === uniqueId);
+
+        if (!item) {
+
+            console.error(
+                "Noticia no encontrada");
+
+            return;
+        }
+
+        const response =
+            await fetch(
+                '/api/SourcesItemsApi/save',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "include",
+                    body: JSON.stringify(item)
+                });
+
+        if (!response.ok) {
+
+            const text =
+                await response.text();
+
+            throw new Error(text);
+        }
+
+        // Recargar guardados
+        await loadSavedItems();
+
+    } catch (error) {
+
+        console.error(
+            'Error guardando:',
+            error);
+    }
 }

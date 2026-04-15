@@ -4,6 +4,8 @@ namespace NewsHub.Application.DTOs.Source;
 
 public class SavedSourceDto
 {
+    public int SourceId { get; set; }
+    
     public string? id { get; set; }
 
     public string? source { get; set; }

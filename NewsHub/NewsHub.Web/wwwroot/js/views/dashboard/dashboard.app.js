@@ -17,10 +17,15 @@ if (localStorage.getItem('darkMode') === 'true') document.documentElement.classL
 
 
 // Render inicial
-//renderFeed();
-loadFeed();
-loadSavedItems();
+async function init() {
 
+    await loadSavedItems();
+
+    await loadFeed();
+
+}
+
+init();
 
 // ===== FILTER =====
 

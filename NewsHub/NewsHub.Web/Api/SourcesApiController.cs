@@ -36,6 +36,8 @@ namespace NewsHub.Web.Api
                     {
                         id = item.UniqueId,
 
+                        sourceId = item.SourceId,
+
                         source =
                             item.SourceName
                             ?? "NOTFOUND",

@@ -50,7 +50,12 @@ function createCard(item, isSaved) {
             .join('');
     const actionBtn = isSaved
         ? `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Eliminar</button>`
-        : `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"><i data-lucide="bookmark" class="w-3.5 h-3.5"></i>Guardar</button>`;
+        : `<button 
+        onclick="saveNews('${item.id}')"
+        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors">
+        <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+        Guardar
+    </button>`;
 
     return `
             <article class="news-card card-enter bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
@@ -76,8 +81,56 @@ function createCard(item, isSaved) {
 
 // Render Feed
 function renderFeed() {
-    const grid = document.getElementById('feed-grid');
-    grid.innerHTML = mockNews.map(n => createCard(n, false)).join('');
+
+    const grid =
+        document.getElementById('feed-grid');
+
+    const savedIds =
+        new Set(
+            savedItems.map(
+                x => `"${String(x.id)}"`
+            )
+        );
+
+    console.log(
+        "SavedIds RAW:",
+        savedItems.map(
+            x => `"${String(x.id)}"`
+        )
+    );
+
+    grid.innerHTML =
+        mockNews
+            .map(n => {
+
+                const newsId =
+                    `"${String(n.id)}"`;
+
+                console.log(
+                    "Comparing:",
+                    newsId
+                );
+
+                const isSaved =
+                    savedIds.has(newsId);
+
+                if (isSaved) {
+
+                    console.log(
+                        "MATCH:",
+                        newsId
+                    );
+
+                }
+
+                return createCard(
+                    n,
+                    isSaved
+                );
+
+            })
+            .join('');
+
     lucide.createIcons();
 }
 
