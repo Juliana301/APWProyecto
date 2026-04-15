@@ -22,7 +22,7 @@ namespace NewsHub.Web.Api
 
         [HttpGet("savedfeed")]
         public async Task<IActionResult>
-            GetSavedFeedJson()
+    GetSavedFeedJson()
         {
             var result =
                 await _sourceItemService
@@ -46,42 +46,69 @@ namespace NewsHub.Web.Api
                             return null;
                         }
 
-                        var data =
-                            JsonConvert
-                                .DeserializeObject
-                                <SavedSourceDto>(
-                                    item.Json);
-
-                        if (data == null)
+                        try
                         {
+                            dynamic? obj =
+                                JsonConvert
+                                    .DeserializeObject(
+                                        item.Json);
+
+                            if (obj == null)
+                            {
+                                return null;
+                            }
+
+                            // ARREGLAR TAGS (string o array)
+
+                            List<string> tags;
+
+                            if (obj.tags is Newtonsoft.Json.Linq.JArray)
+                            {
+                                tags =
+                                    obj.tags
+                                        .ToObject<List<string>>();
+                            }
+                            else
+                            {
+                                tags =
+                                    new List<string>
+                                    {
+                                obj.tags?.ToString()
+                                    };
+                            }
+
+                            return new
+                            {
+                                id =
+                                    (string)obj.id,
+
+                                source =
+                                    (string?)obj.source
+                                    ?? "NOTFOUND",
+
+                                type =
+                                    (string?)obj.type
+                                    ?? "unknown",
+
+                                title =
+                                    (string)obj.title,
+
+                                description =
+                                    (string)obj.description,
+
+                                date =
+                                    (string)obj.date,
+
+                                tags =
+                                    tags
+                            };
+                        }
+                        catch
+                        {
+                            // Si un JSON está malo,
+                            // simplemente lo ignora
                             return null;
                         }
-
-                        return new
-                        {
-                            id =
-                                data.id,
-
-                            source =
-                                data.source
-                                ?? "NOTFOUND",
-
-                            type =
-                                data.type
-                                ?? "unknown",
-
-                            title =
-                                data.title,
-
-                            description =
-                                data.description,
-
-                            date =
-                                data.date,
-
-                            tags =
-                                data.tags
-                        };
                     })
                     .Where(x => x != null);
 
