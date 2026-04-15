@@ -49,15 +49,29 @@ namespace NewsHub.Application.Services.Authentication
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                var existingUser = await _userRepository.GetByEmailAsync(dto.Email);
+                var existingUser =
+                    await _userRepository
+                        .GetByEmailAsync(dto.Email);
+
                 if (existingUser != null)
-                    return Result<bool>.Fail("El email ya está registrado.", TypeMessage.Warning);
+                    return Result<bool>.Fail(
+                        "El email ya está registrado.",
+                        TypeMessage.Warning
+                    );
 
-                var existingUserName = await _userRepository.GetByUserNameAsync(dto.UserName);
+                var existingUserName =
+                    await _userRepository
+                        .GetByUserNameAsync(dto.UserName);
+
                 if (existingUserName != null)
-                    return Result<bool>.Fail("El username ya existe.", TypeMessage.Warning);
+                    return Result<bool>.Fail(
+                        "El username ya existe.",
+                        TypeMessage.Warning
+                    );
 
-                var hash = _passwordHasher.HashPassword(dto.Password);
+                var hash =
+                    _passwordHasher
+                        .HashPassword(dto.Password);
 
                 var user = new UserEnt(
                     dto.Email,
@@ -69,7 +83,14 @@ namespace NewsHub.Application.Services.Authentication
 
                 await _userRepository.AddAsync(user);
 
-                var roleResult = await _userRoleService.AddUserRoleAsync(user.Id, new[] { "User" });
+                await _unitOfWork.SaveChangesAsync();
+
+                var roleResult =
+                    await _userRoleService
+                        .AddUserRoleAsync(
+                            user.Id,
+                            new[] { "User" }
+                        );
 
                 if (!roleResult.Success)
                 {
@@ -79,7 +100,10 @@ namespace NewsHub.Application.Services.Authentication
 
                 await _unitOfWork.CommitAsync();
 
-                return Result<bool>.Ok(true, "Usuario registrado correctamente.");
+                return Result<bool>.Ok(
+                    true,
+                    "Usuario registrado correctamente."
+                );
             }
             catch (Exception ex)
             {
