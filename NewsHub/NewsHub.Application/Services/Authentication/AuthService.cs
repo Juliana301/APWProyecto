@@ -54,20 +54,28 @@ namespace NewsHub.Application.Services.Authentication
                         .GetByEmailAsync(dto.Email);
 
                 if (existingUser != null)
+                {
+                    await _unitOfWork.RollbackAsync();
+
                     return Result<bool>.Fail(
                         "El email ya está registrado.",
                         TypeMessage.Warning
                     );
+                }
 
                 var existingUserName =
                     await _userRepository
                         .GetByUserNameAsync(dto.UserName);
 
                 if (existingUserName != null)
+                {
+                    await _unitOfWork.RollbackAsync();
+
                     return Result<bool>.Fail(
                         "El username ya existe.",
                         TypeMessage.Warning
                     );
+                }
 
                 var hash =
                     _passwordHasher
@@ -83,6 +91,7 @@ namespace NewsHub.Application.Services.Authentication
 
                 await _userRepository.AddAsync(user);
 
+                // Necesario para obtener user.Id
                 await _unitOfWork.SaveChangesAsync();
 
                 var roleResult =
@@ -137,6 +146,8 @@ namespace NewsHub.Application.Services.Authentication
 
                 await _userRepository.UpdateAsync(user);
 
+                await _unitOfWork.SaveChangesAsync();
+
                 var dtoUser = new UserDto
                 {
                     Id = user.Id,
@@ -174,6 +185,8 @@ namespace NewsHub.Application.Services.Authentication
                 if (!tokenResult.Success)
                     return Result<bool>.Fail("No se pudo generar el token.", TypeMessage.Error);
 
+                await _unitOfWork.SaveChangesAsync();
+
                 var token = tokenResult.Data!.Token;
                 var resetLink = $"{_appSettings.BaseUrl}/Authentication/ResetPassword?token={token}";
 
@@ -206,26 +219,55 @@ namespace NewsHub.Application.Services.Authentication
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                var tokenResult = await _passwordResetTokenService.ValidateTokenAsync(dto.Token);
+                var tokenResult =
+                    await _passwordResetTokenService
+                        .ValidateTokenAsync(dto.Token);
 
                 if (!tokenResult.Success)
-                    return Result<bool>.Fail(tokenResult.Error!, tokenResult.TypeMessage);
+                {
+                    await _unitOfWork.RollbackAsync();
+
+                    return Result<bool>.Fail(
+                        tokenResult.Error!,
+                        tokenResult.TypeMessage
+                    );
+                }
 
                 var token = tokenResult.Data!;
-                var user = await _userRepository.GetByIdAsync(token.UserId);
+
+                var user =
+                    await _userRepository
+                        .GetByIdAsync(token.UserId);
 
                 if (user == null)
-                    return Result<bool>.Fail("Usuario no encontrado.", TypeMessage.Error);
+                {
+                    await _unitOfWork.RollbackAsync();
 
-                var newHash = _passwordHasher.HashPassword(dto.Password);
+                    return Result<bool>.Fail(
+                        "Usuario no encontrado.",
+                        TypeMessage.Error
+                    );
+                }
+
+                var newHash =
+                    _passwordHasher
+                        .HashPassword(dto.Password);
 
                 user.ChangePassword(newHash);
 
-                await _passwordResetTokenService.MarkTokenAsUsedAsync(token);
+                await _userRepository.UpdateAsync(user);
+
+                await _passwordResetTokenService
+                    .MarkTokenAsUsedAsync(token);
+
+                await _unitOfWork.SaveChangesAsync();
 
                 await _unitOfWork.CommitAsync();
 
-                return Result<bool>.Ok(true, "Contraseña actualizada correctamente.");
+                return Result<bool>.Ok(
+                    true,
+                    "Contraseña actualizada correctamente."
+                );
             }
             catch (Exception ex)
             {

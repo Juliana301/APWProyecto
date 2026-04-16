@@ -72,22 +72,45 @@ namespace NewsHub.Application.Services.Source
         {
             try
             {
-                // Validamos que exista la fuente con su nombre, para evitar eliminar por error si el id no coincide
-                var exists = await _sourceRepository.FindAsync(s => s.Id == id && s.Name == sourceName);
+                await _unitOfWork.BeginTransactionAsync();
+
+                var exists = await _sourceRepository
+                    .FindAsync(s => s.Id == id && s.Name == sourceName);
 
                 if (!exists.Any())
-                    return Result<bool>.Fail("Fuente no encontrada.", TypeMessage.Warning);
+                {
+                    await _unitOfWork.RollbackAsync();
 
-                var deleted = await _sourceRepository.DeleteAsync(id);
+                    return Result<bool>.Fail(
+                        "Fuente no encontrada.",
+                        TypeMessage.Warning);
+                }
+
+                var deleted =
+                    await _sourceRepository.DeleteAsync(id);
 
                 if (!deleted)
-                    return Result<bool>.Fail("No se pudo eliminar la fuente.", TypeMessage.Warning);
+                {
+                    await _unitOfWork.RollbackAsync();
 
-                return Result<bool>.Ok(true, "Fuente eliminada.");
+                    return Result<bool>.Fail(
+                        "No se pudo eliminar la fuente.",
+                        TypeMessage.Warning);
+                }
+
+                await _unitOfWork.CommitAsync();
+
+                return Result<bool>.Ok(
+                    true,
+                    "Fuente eliminada.");
             }
             catch (Exception ex)
             {
-                return Result<bool>.Fail($"Error eliminando fuente: {ex.Message}", TypeMessage.Error);
+                await _unitOfWork.RollbackAsync();
+
+                return Result<bool>.Fail(
+                    $"Error eliminando fuente: {ex.Message}",
+                    TypeMessage.Error);
             }
         }
 
@@ -147,13 +170,20 @@ namespace NewsHub.Application.Services.Source
         {
             try
             {
-                var entity = await _sourceRepository
-                    .GetByIdAsync(id, asNoTracking: false);
+                await _unitOfWork.BeginTransactionAsync();
+
+                var entity =
+                    await _sourceRepository
+                        .GetByIdAsync(id, asNoTracking: false);
 
                 if (entity == null)
+                {
+                    await _unitOfWork.RollbackAsync();
+
                     return Result<SourceDto>.Fail(
                         "Fuente no encontrada.",
                         TypeMessage.Warning);
+                }
 
                 entity.Update(
                     dto.Url,
@@ -174,35 +204,42 @@ namespace NewsHub.Application.Services.Source
                     await _sourceRepository.UpdateAsync(entity);
 
                 if (updated == null)
+                {
+                    await _unitOfWork.RollbackAsync();
+
                     return Result<SourceDto>.Fail(
                         "No se pudo actualizar la fuente.",
                         TypeMessage.Error);
+                }
 
-                var resultDto = new SourceDto
-                {
-                    Id = updated.Id,
-                    Url = updated.Url,
-                    Name = updated.Name,
-                    ComponentType = updated.ComponentType,
-                    RequiresSecret = updated.RequiresSecret,
-                    Description = updated.Description,
-                    ApiConfigJson = updated.ApiConfigJson
-                };
+                await _unitOfWork.CommitAsync();
 
                 return Result<SourceDto>.Ok(
-                    resultDto,
+                    new SourceDto
+                    {
+                        Id = updated.Id,
+                        Url = updated.Url,
+                        Name = updated.Name,
+                        ComponentType = updated.ComponentType,
+                        RequiresSecret = updated.RequiresSecret,
+                        Description = updated.Description,
+                        ApiConfigJson = updated.ApiConfigJson
+                    },
                     "Fuente actualizada."
                 );
             }
             catch (ArgumentException ex)
             {
-                // errores de validación JSON
+                await _unitOfWork.RollbackAsync();
+
                 return Result<SourceDto>.Fail(
                     ex.Message,
                     TypeMessage.Warning);
             }
             catch (Exception ex)
             {
+                await _unitOfWork.RollbackAsync();
+
                 return Result<SourceDto>.Fail(
                     $"Error actualizando fuente: {ex.Message}",
                     TypeMessage.Error);

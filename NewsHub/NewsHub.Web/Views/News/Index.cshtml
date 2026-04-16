@@ -1,6 +1,7 @@
 ﻿@model DashboardViewModel
 @using System.Security.Claims
 @using NewsHub.Domain.Enums
+@using NewsHub.Web.Common.Extensions
 @*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
@@ -29,7 +30,7 @@
     <div class="flex-1"></div>
     <!-- Stats -->
     <div class="hidden sm:flex items-center gap-4 text-xs text-surface-500">
-        <span class="flex items-center gap-1"><i data-lucide="database" class="w-3.5 h-3.5"></i> 3 fuentes</span>
+        <span class="flex items-center gap-1"><i data-lucide="database" class="w-3.5 h-3.5"></i> @Model.TotalSources fuentes</span>
         <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> 9 items</span>
     </div>
 </header>
@@ -60,7 +61,7 @@
                     <input asp-for="NewSource.Description" type="text" placeholder="Descripcion"
                            class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 placeholder-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500" />
                     
-                    <select asp-for="NewSource.ComponentType" asp-items="Html.GetEnumSelectList<SourceType>()"
+                    <select asp-for="NewSource.ComponentType" asp-items="EnumExtensions.ToSelectList<SourceType>()"
                             class="px-3 py-2 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
                     </select>
                     <div class="flex items-center gap-3">

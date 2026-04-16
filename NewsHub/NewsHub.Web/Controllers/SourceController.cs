@@ -112,6 +112,7 @@ namespace NewsHub.Web.Controllers
             if (result.IsFailure)
             {
                 TempData.SetToast(result.Error ?? "Error al eliminar la fuente", result.TypeMessage);
+                return RedirectToAction("Index", "News");
             }
 
             TempData.SetToast(result.Message ?? "Fuente eliminada correctamente", result.TypeMessage);

@@ -6,7 +6,8 @@ using System.Linq.Expressions;
 
 namespace NewsHub.Infrastructure.Repositories
 {
-    public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
+    public class GenericRepository<TEntity> : IGenericRepository<TEntity>
+        where TEntity : class
     {
         protected readonly ApplicationDbContext _context;
         protected readonly DbSet<TEntity> _dbSet;
@@ -23,7 +24,9 @@ namespace NewsHub.Infrastructure.Repositories
 
         protected async Task Log(string method, Exception ex)
         {
-            await _logError.AddLogErrorAsync($"{typeof(TEntity).Name}.{method}", ex);
+            await _logError.AddLogErrorAsync(
+                $"{typeof(TEntity).Name}.{method}",
+                ex);
         }
 
         // ============================================================
@@ -51,7 +54,8 @@ namespace NewsHub.Infrastructure.Repositories
                 if (asNoTracking)
                     query = query.AsNoTracking();
 
-                return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, key) == id);
+                return await query.FirstOrDefaultAsync(
+                    e => EF.Property<int>(e, key) == id);
             }
             catch (Exception ex)
             {
@@ -61,7 +65,7 @@ namespace NewsHub.Infrastructure.Repositories
         }
 
         // ============================================================
-        // FIRST (primer resultado)
+        // FIRST
         // ============================================================
         public virtual async Task<TEntity?> FirstAsync(
             Expression<Func<TEntity, bool>> predicate,
@@ -88,7 +92,7 @@ namespace NewsHub.Infrastructure.Repositories
         }
 
         // ============================================================
-        // FIND (Where)
+        // FIND
         // ============================================================
         public virtual async Task<List<TEntity>> FindAsync(
             Expression<Func<TEntity, bool>> predicate,
@@ -97,7 +101,8 @@ namespace NewsHub.Infrastructure.Repositories
         {
             try
             {
-                IQueryable<TEntity> query = _dbSet.Where(predicate);
+                IQueryable<TEntity> query =
+                    _dbSet.Where(predicate);
 
                 if (include != null)
                     query = include(query);
@@ -143,7 +148,8 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // EXISTS
         // ============================================================
-        public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
+        public virtual async Task<bool> ExistsAsync(
+            Expression<Func<TEntity, bool>> predicate)
         {
             try
             {
@@ -159,7 +165,8 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // COUNT
         // ============================================================
-        public virtual async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null)
+        public virtual async Task<int> CountAsync(
+            Expression<Func<TEntity, bool>>? predicate = null)
         {
             try
             {
@@ -180,12 +187,15 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // ADD
         // ============================================================
-        public virtual async Task<TEntity?> AddAsync(TEntity entity)
+        public virtual async Task<TEntity?> AddAsync(
+            TEntity entity)
         {
             try
             {
                 await _dbSet.AddAsync(entity);
-                //await _context.SaveChangesAsync();
+
+                // NO SaveChanges aquí
+                // UnitOfWork lo hace
 
                 return entity;
             }
@@ -199,41 +209,44 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // UPDATE
         // ============================================================
-        public virtual async Task<TEntity?> UpdateAsync(TEntity entity)
+        public virtual Task<TEntity?> UpdateAsync(
+            TEntity entity)
         {
             try
             {
                 _dbSet.Update(entity);
 
-                var saved = await _context.SaveChangesAsync() > 0;
+                // NO SaveChanges aquí
 
-                if (!saved)
-                    return null;
-
-                return entity;
+                return Task.FromResult<TEntity?>(entity);
             }
             catch (Exception ex)
             {
-                await Log(nameof(UpdateAsync), ex);
-                return null;
+                return Task.FromResult<TEntity?>(null);
             }
         }
 
         // ============================================================
         // DELETE
         // ============================================================
-        public virtual async Task<bool> DeleteAsync(int id)
+        public virtual async Task<bool> DeleteAsync(
+            int id)
         {
             try
             {
-                var entity = await GetByIdAsync(id, asNoTracking: false);
+                var entity =
+                    await GetByIdAsync(
+                        id,
+                        asNoTracking: false);
 
                 if (entity == null)
                     return false;
 
                 _dbSet.Remove(entity);
 
-                return await _context.SaveChangesAsync() > 0;
+                // NO SaveChanges aquí
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -245,11 +258,12 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // PAGINACIÓN
         // ============================================================
-        public virtual async Task<(List<TEntity> Data, int Total)> GetPagedAsync(
-            int page,
-            int pageSize,
-            bool asNoTracking = true,
-            Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
+        public virtual async Task<(List<TEntity> Data, int Total)>
+            GetPagedAsync(
+                int page,
+                int pageSize,
+                bool asNoTracking = true,
+                Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
         {
             try
             {
@@ -261,12 +275,14 @@ namespace NewsHub.Infrastructure.Repositories
                 if (asNoTracking)
                     query = query.AsNoTracking();
 
-                var total = await query.CountAsync();
+                var total =
+                    await query.CountAsync();
 
-                var data = await query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var data =
+                    await query
+                        .Skip((page - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToListAsync();
 
                 return (data, total);
             }
