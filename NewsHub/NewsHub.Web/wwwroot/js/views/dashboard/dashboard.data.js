@@ -38,6 +38,8 @@ async function loadFeed() {
 
         renderFeed();
 
+        getTotalItems();
+
     } catch (error) {
 
         console.error(
@@ -90,6 +92,12 @@ async function loadSavedItems() {
     }
 }
 
+// ===== GET TOTAL ITEMS =====
+
+function getTotalItems() {
+    const total = mockNews.length;
+    document.getElementById('total-items').textContent = `${total} items`;
+}
 
 // ===== DOWNLOAD JSON =====
 
