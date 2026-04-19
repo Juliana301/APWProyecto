@@ -34,7 +34,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Catching\" />
+    <Folder Include="Caching\" />
+    <Folder Include="External\ApiSources\Builders\" />
+    <Folder Include="External\ApiSources\Helpers\" />
+    <Folder Include="External\ApiSources\Mappers\" />
+    <Folder Include="External\ApiSources\Readers\" />
+    <Folder Include="External\ApiSources\Scoring\" />
+    <Folder Include="External\ApiSources\Services\" />
   </ItemGroup>
 
 </Project>

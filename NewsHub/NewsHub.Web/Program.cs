@@ -23,6 +23,11 @@ using NewsHub.Infrastructure.Catching;
 using NewsHub.Infrastructure.Data;
 using NewsHub.Infrastructure.Email.AzureEmail;
 using NewsHub.Infrastructure.External;
+using NewsHub.Infrastructure.External.ApiSources.Builders;
+using NewsHub.Infrastructure.External.ApiSources.Helpers;
+using NewsHub.Infrastructure.External.ApiSources.Mappers;
+using NewsHub.Infrastructure.External.ApiSources.Readers;
+using NewsHub.Infrastructure.External.ApiSources.Services;
 using NewsHub.Infrastructure.Repositories;
 using NewsHub.Infrastructure.Repositories.CatchError;
 using NewsHub.Infrastructure.Repositories.Tokens;
@@ -146,6 +151,20 @@ builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 // ======================================================
 
 builder.Services.AddHttpClient();
+
+builder.Services.AddScoped<IApiRequestBuilder, ApiRequestBuilder>();
+
+builder.Services.AddScoped<IEnvironmentVariableResolver, EnvironmentVariableResolver>();
+builder.Services.AddScoped<IDateParser, DateParser>();
+
+builder.Services.AddScoped<ISourceItemMapper, SourceItemMapper>();
+builder.Services.AddScoped<IAutoSourceItemMapper, AutoSourceItemMapper>();
+
+builder.Services.AddScoped<IApiResponseService, ApiResponseService>();
+
+builder.Services.AddScoped<ISimpleApiReader, SimpleApiReader>();
+builder.Services.AddScoped<IIdPipelineApiReader, IdPipelineApiReader>();
+builder.Services.AddScoped<IAutoApiReader, AutoApiReader>();
 
 builder.Services.AddScoped<ISourceReader, RssSourceReader>();
 builder.Services.AddScoped<ISourceReader, ApiSourceReader>();
