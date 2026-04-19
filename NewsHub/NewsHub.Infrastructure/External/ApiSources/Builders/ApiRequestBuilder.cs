@@ -26,7 +26,11 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
 
             if (mergedQueryParams != null && mergedQueryParams.Count > 0)
             {
-                url = AddQueryString(url, mergedQueryParams);
+                url = UrlHelper.AddQueryString(
+                    url,
+                    mergedQueryParams,
+                    _environmentVariableResolver.Resolve
+                );
             }
 
             var methodText = requestConfig?.Method ?? "GET";
@@ -76,25 +80,6 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
             }
 
             return result;
-        }
-
-        private string AddQueryString(string url, Dictionary<string, string> queryParams)
-        {
-            var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
-
-            foreach (var param in queryParams)
-            {
-                var value = _environmentVariableResolver.Resolve(param.Value);
-
-                if (!string.IsNullOrWhiteSpace(value))
-                {
-                    query[param.Key] = value;
-                }
-            }
-
-            var separator = url.Contains("?") ? "&" : "?";
-
-            return url + separator + query.ToString();
         }
 
         private void AddHeaders(HttpRequestMessage request, Dictionary<string, string>? headers)
