@@ -1,5 +1,4 @@
-﻿using NewsHub.Application.Common.Interfaces;
-using NewsHub.Application.Common.Models;
+﻿using NewsHub.Application.Common.Models;
 using NewsHub.Application.Interfaces;
 using NewsHub.Domain.Entities;
 using NewsHub.Domain.Enums;

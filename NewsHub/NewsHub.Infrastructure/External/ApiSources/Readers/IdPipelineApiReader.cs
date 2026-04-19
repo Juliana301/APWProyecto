@@ -21,7 +21,10 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
             _sourceItemMapper = sourceItemMapper;
         }
 
-        public async Task<List<SourceItem>> ReadAsync(SourceEnt source, ApiSourceConfig config)
+        public async Task<List<SourceItem>> ReadAsync(
+            SourceEnt source,
+            ApiSourceConfig config,
+            CancellationToken cancellationToken = default)
         {
             var items = new List<SourceItem>();
 
@@ -32,7 +35,11 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
                 return items;
             }
 
-            var token = await _apiResponseService.GetResponseTokenAsync(config.IdsUrl, config);
+            var token = await _apiResponseService.GetResponseTokenAsync(
+                config.IdsUrl,
+                config,
+                cancellationToken);
+
             var idsArray = JsonHelper.GetRootArray(token);
 
             if (idsArray == null)
@@ -43,12 +50,18 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
 
             var tasks = ids.Select(async id =>
             {
-                await semaphore.WaitAsync();
+                await semaphore.WaitAsync(cancellationToken);
 
                 try
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var url = config.ItemUrlTemplate.Replace("{id}", id.ToString());
-                    var itemToken = await _apiResponseService.GetResponseTokenAsync(url, config);
+
+                    var itemToken = await _apiResponseService.GetResponseTokenAsync(
+                        url,
+                        config,
+                        cancellationToken);
 
                     if (itemToken is not JObject obj)
                         return null;
@@ -65,6 +78,10 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
                         return null;
 
                     return _sourceItemMapper.Map(source, obj, config.Mapping);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch
                 {

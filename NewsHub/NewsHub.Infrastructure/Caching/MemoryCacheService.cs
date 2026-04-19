@@ -1,8 +1,7 @@
-using System;
 using Microsoft.Extensions.Caching.Memory;
 using NewsHub.Application.Common.Interfaces;
 
-namespace NewsHub.Infrastructure.Catching
+namespace NewsHub.Infrastructure.Caching
 {
     public class MemoryCacheService : ICacheService
     {
@@ -15,26 +14,36 @@ namespace NewsHub.Infrastructure.Catching
 
         public async Task<T> GetOrCreateAsync<T>(
             string key,
-            Func<Task<T>> factory,
-            int minutes)
+            Func<CancellationToken, Task<T>> factory,
+            int minutes,
+            CancellationToken cancellationToken = default)
         {
-            if (_cache.TryGetValue(key, out T cached))
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentException("Cache key cannot be null or empty.", nameof(key));
+
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            if (minutes <= 0)
+                minutes = 5;
+
+            var result = await _cache.GetOrCreateAsync(key, async entry =>
             {
-                return cached;
-            }
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(minutes);
+                return await factory(cancellationToken);
+            });
 
-            var result = await factory();
-
-            _cache.Set(
-                key,
-                result,
-                TimeSpan.FromMinutes(minutes));
+            if (result == null)
+                throw new InvalidOperationException("Cache factory returned null.");
 
             return result;
         }
 
         public void Remove(string key)
         {
+            if (string.IsNullOrWhiteSpace(key))
+                return;
+
             _cache.Remove(key);
         }
     }

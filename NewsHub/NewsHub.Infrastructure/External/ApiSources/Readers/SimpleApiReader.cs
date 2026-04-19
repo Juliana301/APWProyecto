@@ -20,13 +20,20 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
             _sourceItemMapper = sourceItemMapper;
         }
 
-        public async Task<List<SourceItem>> ReadAsync(SourceEnt source, ApiSourceConfig config)
+        public async Task<List<SourceItem>> ReadAsync(
+            SourceEnt source,
+            ApiSourceConfig config,
+            CancellationToken cancellationToken = default)
         {
             var items = new List<SourceItem>();
             var limit = config.Limit;
             var root = config.Root;
 
-            var token = await _apiResponseService.GetResponseTokenAsync(source.Url, config);
+            var token = await _apiResponseService.GetResponseTokenAsync(
+                source.Url,
+                config,
+                cancellationToken);
+
             var rootArray = JsonHelper.GetRootArray(token, root);
 
             if (rootArray == null || config.Mapping == null)
@@ -34,6 +41,7 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
 
             foreach (var element in rootArray.Take(limit))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 items.Add(_sourceItemMapper.Map(source, element, config.Mapping));
             }
 

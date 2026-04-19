@@ -6,6 +6,9 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
 {
     public interface ISimpleApiReader
     {
-        Task<List<SourceItem>> ReadAsync(SourceEnt source, ApiSourceConfig config);
+        Task<List<SourceItem>> ReadAsync(
+            SourceEnt source,
+            ApiSourceConfig config,
+            CancellationToken cancellationToken = default);
     }
 }

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Http.Resilience;
+using Polly;
 using NewsHub.Application.Common.Interfaces;
 using NewsHub.Application.Configuration;
 using NewsHub.Application.External;
@@ -19,7 +21,7 @@ using NewsHub.Application.Services.Tokens;
 using NewsHub.Domain.Interfaces.Repositories;
 using NewsHub.Domain.Interfaces.Repositories.ErrorCatch;
 using NewsHub.Domain.Interfaces.Repositories.Tokens;
-using NewsHub.Infrastructure.Catching;
+using NewsHub.Infrastructure.Caching;
 using NewsHub.Infrastructure.Data;
 using NewsHub.Infrastructure.Email.AzureEmail;
 using NewsHub.Infrastructure.External;
@@ -150,8 +152,6 @@ builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 // PARSERS
 // ======================================================
 
-builder.Services.AddHttpClient();
-
 builder.Services.AddScoped<IApiRequestBuilder, ApiRequestBuilder>();
 
 builder.Services.AddScoped<IEnvironmentVariableResolver, EnvironmentVariableResolver>();
@@ -160,7 +160,21 @@ builder.Services.AddScoped<IDateParser, DateParser>();
 builder.Services.AddScoped<ISourceItemMapper, SourceItemMapper>();
 builder.Services.AddScoped<IAutoSourceItemMapper, AutoSourceItemMapper>();
 
-builder.Services.AddScoped<IApiResponseService, ApiResponseService>();
+builder.Services.AddHttpClient<IApiResponseService, ApiResponseService>()
+    .AddStandardResilienceHandler(options =>
+    {
+        options.Retry.MaxRetryAttempts = 3;
+        options.Retry.BackoffType = DelayBackoffType.Exponential;
+        options.Retry.UseJitter = true;
+
+        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+
+        options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+        options.CircuitBreaker.FailureRatio = 0.5;
+        options.CircuitBreaker.MinimumThroughput = 10;
+        options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(15);
+    });
 
 builder.Services.AddScoped<ISimpleApiReader, SimpleApiReader>();
 builder.Services.AddScoped<IIdPipelineApiReader, IdPipelineApiReader>();
