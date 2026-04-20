@@ -4,47 +4,42 @@ let mockNews = [];
 
 let savedItems = [];
 
+let feedAbortController = null;
 
 // ===== LOAD FEED =====
 
 async function loadFeed() {
-
     try {
+        if (feedAbortController) {
+            feedAbortController.abort();
+        }
 
-        const response =
-            await fetch(
-                '/api/SourcesApi/feed',
-                {
-                    credentials: "include"
-                });
+        feedAbortController = new AbortController();
+
+        const response = await fetch('/api/SourcesApi/feed', {
+            credentials: "include",
+            signal: feedAbortController.signal
+        });
 
         if (!response.ok) {
-
             if (response.status === 401) {
-
-                // No logueado → redirigir
-                window.location.href =
-                    '/Authentication/Login';
-
+                window.location.href = '/Authentication/Login';
                 return;
             }
 
-            throw new Error(
-                'Error cargando feed');
+            throw new Error('Error cargando feed');
         }
 
-        mockNews =
-            await response.json();
+        mockNews = await response.json();
 
         renderFeed();
-
         getTotalItems();
-
     } catch (error) {
+        if (error.name === 'AbortError') {
+            return;
+        }
 
-        console.error(
-            'Error cargando feed:',
-            error);
+        console.error('Error cargando feed:', error);
     }
 }
 

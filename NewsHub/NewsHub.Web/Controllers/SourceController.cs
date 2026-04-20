@@ -119,5 +119,6 @@ namespace NewsHub.Web.Controllers
 
             return RedirectToAction("Index", "News");
         }
+        
     }
 }

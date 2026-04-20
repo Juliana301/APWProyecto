@@ -246,7 +246,7 @@ namespace NewsHub.Application.Services.Source
             }
         }
 
-        public async Task<Result<List<SourceItem>>> ReadAllFeedsAsync()
+        public async Task<Result<List<SourceItem>>> ReadAllFeedsAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -272,9 +272,9 @@ namespace NewsHub.Application.Services.Source
                                 source.ComponentType);
 
                         // Leer noticias
-                        var items =
-                            await reader.ReadAsync(source);
-
+                        var items = 
+                            await reader.ReadAsync(source, cancellationToken);
+                        
                         if (items != null)
                             allItems.AddRange(items);
                     }

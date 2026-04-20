@@ -26,7 +26,9 @@ namespace NewsHub.Infrastructure.External
 
         public SourceType Type => SourceType.Api;
 
-        public async Task<List<SourceItem>> ReadAsync(SourceEnt source)
+        public async Task<List<SourceItem>> ReadAsync(
+            SourceEnt source,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(source.ApiConfigJson))
                 return new List<SourceItem>();
@@ -40,11 +42,19 @@ namespace NewsHub.Infrastructure.External
 
                 return config.Type switch
                 {
-                    "Simple" => await _simpleApiReader.ReadAsync(source, config),
-                    "IdPipeline" => await _idPipelineApiReader.ReadAsync(source, config),
-                    "Auto" => await _autoApiReader.ReadAsync(source, config),
+                    "Simple" => await _simpleApiReader.ReadAsync(source, config, cancellationToken),
+
+                    "IdPipeline" => await _idPipelineApiReader.ReadAsync(source, config, cancellationToken),
+
+                    "Auto" => await _autoApiReader.ReadAsync(source, config, cancellationToken),
+
                     _ => new List<SourceItem>()
                 };
+            }
+            catch (OperationCanceledException)
+            {
+                // importante: no lo tragues
+                throw;
             }
             catch
             {

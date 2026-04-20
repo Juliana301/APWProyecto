@@ -7,6 +7,8 @@ namespace NewsHub.Application.Interfaces
     public interface ISourceReader
     {
         SourceType Type { get; }
-        Task<List<SourceItem>> ReadAsync(SourceEnt source);
+        Task<List<SourceItem>> ReadAsync(
+                SourceEnt source,
+                CancellationToken cancellationToken = default);
     }
 }

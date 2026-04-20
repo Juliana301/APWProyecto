@@ -37,47 +37,78 @@ function sourceColor(type) {
     return 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300';
 }
 
-
-// Crear tarjeta
-function createCard(item, isSaved) {
-    const tagHtml =
-        (Array.isArray(item.tags)
-            ? item.tags
-            : [item.tags])
-            .map(t =>
-                `<span class="px-2 py-0.5 text-xs rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400">${t}</span>`
-            )
-            .join('');
-    const actionBtn = isSaved
-        ? `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Eliminar</button>`
-        : `<button 
-        onclick="saveNews('${item.id}')"
-        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors">
-        <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
-        Guardar
-    </button>`;
-
-    return `
-            <article class="news-card card-enter bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
-              <div class="p-5 flex-1 flex flex-col">
-                <div class="flex items-center gap-2 mb-3">
-                  <span class="px-2 py-0.5 text-xs font-medium rounded-full ${sourceColor(item.type)}">${item.source}</span>
-                  <span class="text-xs text-surface-400 ml-auto">${item.date}</span>
-                </div>
-                <a href="item-detail.html?id=${item.id}" class="text-base font-semibold leading-snug hover:text-brand-600 dark:hover:text-brand-400 transition-colors mb-2 line-clamp-2">${item.title}</a>
-                <p class="text-sm text-surface-500 dark:text-surface-400 leading-relaxed line-clamp-3 flex-1">${item.description}</p>
-                <div class="flex flex-wrap gap-1.5 mt-3">${tagHtml}</div>
-              </div>
-              <div class="px-5 py-3 border-t border-surface-100 dark:border-surface-700 flex items-center justify-between">
-                ${actionBtn}
-                <div class="flex items-center gap-1">
-                  <a href="item-detail.html?id=${item.id}" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"><i data-lucide="eye" class="w-3.5 h-3.5"></i>Detalle</a>
-                  <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors" onclick="downloadNewsJson('${item.id}')" ><i data-lucide="download" class="w-3.5 h-3.5"></i>JSON</button>
-                </div>
-              </div>
-            </article>`;
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
+function createCard(item, isSaved) {
+    const safeId = encodeURIComponent(item.id ?? '');
+    const safeSource = escapeHtml(item.source);
+    const safeDate = escapeHtml(item.date);
+    const safeTitle = escapeHtml(item.title);
+    const safeDescription = escapeHtml(item.description);
+
+    const tags = Array.isArray(item.tags) ? item.tags : [];
+    const safeUrl = typeof item.url === 'string' ? item.url.trim() : '';
+    const hasExternalUrl = safeUrl !== '' && safeUrl !== '#';
+
+    const titleHref = hasExternalUrl
+        ? safeUrl
+        : `item-detail.html?id=${safeId}`;
+
+    const titleTarget = hasExternalUrl
+        ? `target="_blank" rel="noopener noreferrer"`
+        : '';
+
+    const tagHtml = tags
+        .filter(t => t != null && String(t).trim() !== '')
+        .map(t => `
+            <span class="px-2 py-0.5 text-xs rounded-full bg-surface-100 dark:bg-surface-700 text-surface-500 dark:text-surface-400">
+                ${escapeHtml(t)}
+            </span>
+        `)
+        .join('');
+
+    const actionBtn = isSaved
+        ? `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Eliminar</button>`
+        : `<button onclick="saveNews('${item.id}')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"><i data-lucide="bookmark" class="w-3.5 h-3.5"></i>Guardar</button>`;
+
+    const detailButton = `
+        <a href="item-detail.html?id=${safeId}"
+           class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+           <i data-lucide="eye" class="w-3.5 h-3.5"></i>Detalle
+        </a>`;
+
+    return `
+        <article class="news-card card-enter bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+          <div class="p-5 flex-1 flex flex-col">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="px-2 py-0.5 text-xs font-medium rounded-full ${sourceColor(item.type)}">${safeSource}</span>
+              <span class="text-xs text-surface-400 ml-auto">${safeDate}</span>
+            </div>
+            <a href="${titleHref}" ${titleTarget}
+               class="text-base font-semibold leading-snug hover:text-brand-600 dark:hover:text-brand-400 transition-colors mb-2 line-clamp-2">
+               ${safeTitle}
+            </a>
+            <p class="text-sm text-surface-500 dark:text-surface-400 leading-relaxed line-clamp-3 flex-1">${safeDescription}</p>
+            <div class="flex flex-wrap gap-1.5 mt-3">${tagHtml}</div>
+          </div>
+          <div class="px-5 py-3 border-t border-surface-100 dark:border-surface-700 flex items-center justify-between">
+            ${actionBtn}
+            <div class="flex items-center gap-1">
+              ${detailButton}
+              <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors" onclick="downloadNewsJson('${item.id}')">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>JSON
+              </button>
+            </div>
+          </div>
+        </article>`;
+}
 
 // Render Feed
 function renderFeed() {

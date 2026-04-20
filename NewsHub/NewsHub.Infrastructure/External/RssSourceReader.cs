@@ -1,4 +1,6 @@
-﻿using System.Xml.Linq;
+﻿using System.Net;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NewsHub.Application.Common.Interfaces;
 using NewsHub.Application.Common.Models;
@@ -30,7 +32,9 @@ namespace NewsHub.Infrastructure.External
 
         public SourceType Type => SourceType.Rss;
 
-        public async Task<List<SourceItem>> ReadAsync(SourceEnt source)
+        public async Task<List<SourceItem>> ReadAsync(
+            SourceEnt source,
+            CancellationToken cancellationToken = default)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
@@ -107,16 +111,19 @@ namespace NewsHub.Infrastructure.External
 
                     var title = rssItem.Element("title")?.Value?.Trim() ?? "Sin título";
 
-                    var description = rssItem.Element("description")?.Value?.Trim() ?? "Sin descripción";
+                    var descriptionRaw = rssItem.Element("description")?.Value ?? "Sin descripción";
+                    var description = ExtractTextFromHtml(descriptionRaw);
+
                     if (description.Length > 500)
                     {
                         description = description[..500];
                     }
 
-                    var link = rssItem.Element("link")?.Value?.Trim() ?? "#";
+                    var link = rssItem.Element("link")?.Value?.Trim();
+
                     if (string.IsNullOrWhiteSpace(link))
                     {
-                        continue;
+                        link = null;
                     }
 
                     var categories = rssItem.Elements("category")
@@ -158,7 +165,22 @@ namespace NewsHub.Infrastructure.External
                 cacheKey,
                 factory,
                 cacheMinutes,
-                CancellationToken.None);
+                cancellationToken);
+        }
+
+        private static string ExtractTextFromHtml(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            // Quitar tags HTML
+            var text = Regex.Replace(input, "<.*?>", string.Empty);
+
+            // Decodificar entidades HTML (&nbsp;, etc)
+            text = WebUtility.HtmlDecode(text);
+
+            return text.Trim();
         }
     }
+
 }

@@ -12,6 +12,6 @@ namespace NewsHub.Application.Interfaces.Services.Source
         Task<Result<SourceDto>> UpdateAsync(int id, SourceDto dto);
         Task<Result<bool>> DeleteAsync(int id, string sourceName);
 
-        Task<Result<List<SourceItem>>> ReadAllFeedsAsync();
+        Task<Result<List<SourceItem>>> ReadAllFeedsAsync(CancellationToken cancellationToken = default);
     }
 }
