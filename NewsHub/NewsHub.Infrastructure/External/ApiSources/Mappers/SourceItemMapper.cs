@@ -9,17 +9,22 @@ namespace NewsHub.Infrastructure.External.ApiSources.Mappers
     public class SourceItemMapper : ISourceItemMapper
     {
         private readonly IDateParser _dateParser;
+        private readonly IUrlNormalizerService _urlNormalizerService;
 
-        public SourceItemMapper(IDateParser dateParser)
+        public SourceItemMapper(
+            IDateParser dateParser, 
+            IUrlNormalizerService urlNormalizerService)
         {
             _dateParser = dateParser;
+            _urlNormalizerService = urlNormalizerService;
         }
 
         public SourceItem Map(SourceEnt source, JToken obj, ApiMappingConfig mapping)
         {
             var title = JsonHelper.GetValue(obj, mapping.Title) ?? "Sin título";
             var description = JsonHelper.GetValue(obj, mapping.Description) ?? "";
-            var url = JsonHelper.GetValue(obj, mapping.Url) ?? "#";
+            var rawUrl = JsonHelper.GetValue(obj, mapping.Url);
+            var url = _urlNormalizerService.Normalize(rawUrl);
             var category = JsonHelper.GetValue(obj, mapping.Category);
             var publishedRaw = JsonHelper.GetValue(obj, mapping.PublishedAt);
             var publishedAt = _dateParser.Parse(publishedRaw);
@@ -31,7 +36,7 @@ namespace NewsHub.Infrastructure.External.ApiSources.Mappers
                 SourceType = source.ComponentType,
                 Title = title,
                 Description = description,
-                Url = url,
+                Url = url ?? string.Empty,
                 Category = new[] { category ?? "Sin categoría" },
                 PublishedAt = publishedAt
             };

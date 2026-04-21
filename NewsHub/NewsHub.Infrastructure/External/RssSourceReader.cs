@@ -16,17 +16,20 @@ namespace NewsHub.Infrastructure.External
         private readonly HttpClient _httpClient;
         private readonly ICacheService _cache;
         private readonly IDateParser _dateParser;
+        private readonly IUrlNormalizerService _urlNormalizerService;
         private readonly ILogger<RssSourceReader> _logger;
 
         public RssSourceReader(
             HttpClient httpClient,
             ICacheService cache,
             IDateParser dateParser,
+            IUrlNormalizerService urlNormalizerService,
             ILogger<RssSourceReader> logger)
         {
             _httpClient = httpClient;
             _cache = cache;
             _dateParser = dateParser;
+            _urlNormalizerService = urlNormalizerService;
             _logger = logger;
         }
 
@@ -119,11 +122,12 @@ namespace NewsHub.Infrastructure.External
                         description = description[..500];
                     }
 
-                    var link = rssItem.Element("link")?.Value?.Trim();
+                    var linkRaw = rssItem.Element("link")?.Value;
+                    var link = _urlNormalizerService.Normalize(linkRaw);
 
-                    if (string.IsNullOrWhiteSpace(link))
+                    if (link == null)
                     {
-                        link = null;
+                        continue;
                     }
 
                     var categories = rssItem.Elements("category")

@@ -156,7 +156,7 @@ builder.Services.AddScoped<IApiRequestBuilder, ApiRequestBuilder>();
 
 builder.Services.AddScoped<IEnvironmentVariableResolver, EnvironmentVariableResolver>();
 builder.Services.AddScoped<IDateParser, DateParser>();
-
+builder.Services.AddScoped<IUrlNormalizerService, UrlNormalizerService>();
 builder.Services.AddScoped<ISourceItemMapper, SourceItemMapper>();
 builder.Services.AddScoped<IAutoSourceItemMapper, AutoSourceItemMapper>();
 

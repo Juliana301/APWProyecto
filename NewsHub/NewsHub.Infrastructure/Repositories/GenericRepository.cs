@@ -17,9 +17,9 @@ namespace NewsHub.Infrastructure.Repositories
             ApplicationDbContext context,
             ILogErrorRepository logError)
         {
-            _context = context;
-            _dbSet = context.Set<TEntity>();
-            _logError = logError;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _logError = logError ?? throw new ArgumentNullException(nameof(logError));
+            _dbSet = _context.Set<TEntity>();
         }
 
         protected async Task Log(string method, Exception ex)
@@ -101,8 +101,7 @@ namespace NewsHub.Infrastructure.Repositories
         {
             try
             {
-                IQueryable<TEntity> query =
-                    _dbSet.Where(predicate);
+                IQueryable<TEntity> query = _dbSet.Where(predicate);
 
                 if (include != null)
                     query = include(query);
@@ -187,16 +186,11 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // ADD
         // ============================================================
-        public virtual async Task<TEntity?> AddAsync(
-            TEntity entity)
+        public virtual async Task<TEntity?> AddAsync(TEntity entity)
         {
             try
             {
                 await _dbSet.AddAsync(entity);
-
-                // NO SaveChanges aquí
-                // UnitOfWork lo hace
-
                 return entity;
             }
             catch (Exception ex)
@@ -209,43 +203,33 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // UPDATE
         // ============================================================
-        public virtual Task<TEntity?> UpdateAsync(
-            TEntity entity)
+        public virtual async Task<TEntity?> UpdateAsync(TEntity entity)
         {
             try
             {
                 _dbSet.Update(entity);
-
-                // NO SaveChanges aquí
-
-                return Task.FromResult<TEntity?>(entity);
+                return entity;
             }
             catch (Exception ex)
             {
-                return Task.FromResult<TEntity?>(null);
+                await Log(nameof(UpdateAsync), ex);
+                return null;
             }
         }
 
         // ============================================================
         // DELETE
         // ============================================================
-        public virtual async Task<bool> DeleteAsync(
-            int id)
+        public virtual async Task<bool> DeleteAsync(int id)
         {
             try
             {
-                var entity =
-                    await GetByIdAsync(
-                        id,
-                        asNoTracking: false);
+                var entity = await GetByIdAsync(id, asNoTracking: false);
 
                 if (entity == null)
                     return false;
 
                 _dbSet.Remove(entity);
-
-                // NO SaveChanges aquí
-
                 return true;
             }
             catch (Exception ex)
@@ -258,15 +242,17 @@ namespace NewsHub.Infrastructure.Repositories
         // ============================================================
         // PAGINACIÓN
         // ============================================================
-        public virtual async Task<(List<TEntity> Data, int Total)>
-            GetPagedAsync(
-                int page,
-                int pageSize,
-                bool asNoTracking = true,
-                Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
+        public virtual async Task<(List<TEntity> Data, int Total)> GetPagedAsync(
+            int page,
+            int pageSize,
+            bool asNoTracking = true,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
         {
             try
             {
+                if (page <= 0) page = 1;
+                if (pageSize <= 0) pageSize = 10;
+
                 IQueryable<TEntity> query = _dbSet;
 
                 if (include != null)
@@ -275,14 +261,12 @@ namespace NewsHub.Infrastructure.Repositories
                 if (asNoTracking)
                     query = query.AsNoTracking();
 
-                var total =
-                    await query.CountAsync();
+                var total = await query.CountAsync();
 
-                var data =
-                    await query
-                        .Skip((page - 1) * pageSize)
-                        .Take(pageSize)
-                        .ToListAsync();
+                var data = await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
                 return (data, total);
             }
