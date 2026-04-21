@@ -18,6 +18,11 @@ namespace NewsHub.Infrastructure.Repositories
         {
         }
 
+        public async Task<List<UserEnt>> GetAllUsersAsync(bool includeInactive)
+        {
+            return await GetAllAsync(includeInactive).ConfigureAwait(false);
+        }
+
         public async Task<UserEnt?> GetByEmailAsync(string email)
         {
             return await FirstAsync(u => u.Email == email);

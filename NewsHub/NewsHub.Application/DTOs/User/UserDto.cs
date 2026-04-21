@@ -12,6 +12,8 @@ namespace NewsHub.Application.DTOs.User
         public string UserName { get; init; } = null!;
         public string FirstName { get; init; } = null!;
         public string LastName { get; init; } = null!;
+        public bool IsActive { get; init; } = false;
+
 
         public List<string> Roles { get; init; } = new();
 

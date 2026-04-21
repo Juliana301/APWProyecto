@@ -18,5 +18,5 @@ public class SavedSourceDto
 
     public string? date { get; set; }
 
-    public List<string> tags { get; set; }
+    public List<string> tags { get; set; } = new();
 }

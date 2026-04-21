@@ -9,6 +9,6 @@ namespace NewsHub.Web.ViewModels.Dashboard
         public EditSourceViewModel EditSource { get; set; } = new();
         public DeleteSourceViewModel DeleteSource { get; set; } = new();
 
-        public int TotalSources { get { return Sources.Count; } set; }
+        public int TotalSources => Sources.Count();
     }
 }

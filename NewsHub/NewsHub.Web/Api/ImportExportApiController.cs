@@ -264,14 +264,13 @@ namespace NewsHub.Web.Api
                     tags =
                         new[]
                         {
-                            model.normalized
-                                .category.primary
+                            model.normalized?.category?.primary
                         }
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
                         .Concat(
-                            model.normalized
-                                .category.secondary ?? []
+                            model.normalized?.category?.secondary ?? Enumerable.Empty<string>()
                         )
-                        .ToArray()
+                        .ToList()
                 };
 
             var savedJson =
@@ -298,7 +297,7 @@ namespace NewsHub.Web.Api
                 message =
                     "Importación oficial exitosa.",
                 title =
-                    model.normalized.title
+                    model.normalized.title ?? "Sin título",
             });
         }
     }

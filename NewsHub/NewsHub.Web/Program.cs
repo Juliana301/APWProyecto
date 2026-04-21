@@ -34,6 +34,8 @@ using NewsHub.Infrastructure.Repositories;
 using NewsHub.Infrastructure.Repositories.CatchError;
 using NewsHub.Infrastructure.Repositories.Tokens;
 using NewsHub.Infrastructure.Security;
+using NewsHub.Application.Interfaces.Services.Users;
+using NewsHub.Application.Services.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -135,6 +137,7 @@ builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepo
 // ======================================================
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IManageUsersService, ManageUsersService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<ISourceService, SourceService>();
 builder.Services.AddScoped<ISourceItemService, SourceItemService>();
