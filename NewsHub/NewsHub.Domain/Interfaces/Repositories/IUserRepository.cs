@@ -10,5 +10,6 @@ namespace NewsHub.Domain.Interfaces.Repositories
         Task<UserEnt?> GetByEmailAsync(string email);
         Task<UserEnt?> GetByUserNameAsync(string userName);
         Task<List<UserEnt>> GetAllUsersAsync(bool includeInactive);
+        Task<UserEnt?> GetByIdWithRolesAsync(int id);
     }  
 }

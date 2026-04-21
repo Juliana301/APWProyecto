@@ -46,6 +46,7 @@
                             <th class="px-6 py-3 text-left font-medium">Usuario</th>
                             <th class="px-6 py-3 text-left font-medium">Email</th>
                             <th class="px-6 py-3 text-left font-medium">Rol</th>
+                            <th class="px-6 py-3 text-left font-medium">Estado</th>
                             <th class="px-6 py-3 text-right font-medium">Accion</th>
                         </tr>
                     </thead>
@@ -76,38 +77,51 @@
                                     : "";
 
                                 var initials = $"{firstInitial}{lastInitial}";
-                                var userRole = users.Roles;
+                                var userRole = users.Role;
 
                                 <tr class="hover:bg-surface-50 dark:hover:bg-surface-800/50">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-8 h-8 rounded-full @bgClass flex items-center justify-center text-xs font-bold @textClass">
-                                                @initials
+                                    <form asp-action="UpdateUser" asp-controller="Settings" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="UserId" value="@users.Id" />
+
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="w-8 h-8 rounded-full @bgClass flex items-center justify-center text-xs font-bold @textClass">
+                                                    @initials
+                                                </div>
+                                                <span class="font-medium">
+                                                    @($"{users.FirstName} {users.LastName}")
+                                                </span>
                                             </div>
-                                            <span class="font-medium">
-                                                @($"{users.FirstName} {users.LastName}")
-                                            </span>
-                                        </div>
-                                    </td>
+                                        </td>
 
-                                    <td class="px-6 py-4 text-surface-500">
-                                        @users.Email
-                                    </td>
+                                        <td class="px-6 py-4 text-surface-500">
+                                            @users.Email
+                                        </td>
 
-                                    <td class="px-6 py-4">
-                                        <select name="role-@users.Id"
-                                                asp-items="@(new SelectList(EnumExtensions.ToSelectList<RolesEnums>(), "Value", "Text", users.Roles.ToString()))"
-                                                class="px-3 py-1.5 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                        </select>
-                                    </td>
+                                        <td class="px-6 py-4">
+                                            <select name="Role"
+                                                    asp-items="@(new SelectList(EnumExtensions.ToSelectList<RolesEnums>(), "Value", "Text", users.Role.ToString()))"
+                                                    class="px-3 py-1.5 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                            </select>
+                                        </td>
 
-                                    <td class="px-6 py-4 text-right">
-                                        <button
-                                            class="px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors">
-                                            Guardar
-                                        </button>
-                                    </td>
+                                        <td class="px-6 py-4">
+                                            <select name="IsActive"
+                                                    class="px-3 py-1.5 text-sm rounded-lg border border-surface-200 dark:border-surface-600 bg-surface-50 dark:bg-surface-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                                <option value="true" selected="@(users.IsActive)">Activo</option>
+                                                <option value="false" selected="@(!users.IsActive)">Inactivo</option>
+                                            </select>
+                                        </td>
+
+                                        <td class="px-6 py-4 text-right">
+                                            <button type="submit"
+                                                    class="px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors">
+                                                Guardar
+                                            </button>
+                                        </td>
+                                    </form>
                                 </tr>
                             }
                         }

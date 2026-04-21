@@ -21,7 +21,7 @@ namespace NewsHub.Web.Common.Extensions
                 .ToList();
         }
 
-        private static string GetDescription(Enum value)
+        public static string GetDescription(Enum value)
         {
             var field = value
                 .GetType()

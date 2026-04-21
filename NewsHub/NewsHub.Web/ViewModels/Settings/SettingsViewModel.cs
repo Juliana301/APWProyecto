@@ -18,5 +18,5 @@ public class UsersViewModel
     public bool IsActive { get; init; } = false;
 
 
-    public RolesEnums Roles { get; init; }
+    public RolesEnums Role { get; init; }
 }

@@ -41,5 +41,15 @@ namespace NewsHub.Infrastructure.Repositories
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role));
         }
+
+        public async Task<UserEnt?> GetByIdWithRolesAsync(int id)
+        {
+            return await FirstAsync(
+                u => u.Id == id,
+                asNoTracking: false,
+                include: query => query
+                    .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role));
+        }
     }
 }

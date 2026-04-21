@@ -36,6 +36,15 @@ namespace NewsHub.Domain.Entities
             CreatedAt = DateTime.UtcNow;
         }
 
+        public void UpdateRole(int newRoleId)
+        {
+            if (UserRoles.Any(ur => ur.RoleId == newRoleId))
+                return;
+
+            UserRoles.Clear();
+            UserRoles.Add(new UserRoleEnt(this.Id, newRoleId));
+        }
+
         public void AddRole(int roleId)
         {
             if (UserRoles.Any(ur => ur.RoleId == roleId))
@@ -52,6 +61,11 @@ namespace NewsHub.Domain.Entities
         public void UpdateLastLogin()
         {
             LastLoginAt = DateTime.UtcNow;
+        }
+
+        public void Activate()
+        {
+            IsActive = true;
         }
 
         public void Deactivate()

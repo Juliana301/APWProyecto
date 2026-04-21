@@ -9,5 +9,6 @@ namespace NewsHub.Application.Interfaces.Services.Users
     public interface IManageUsersService
     {
         Task<Result<List<UserDto>>> GetAllUsersAsync(bool includeInactive);
+        Task<Result<bool>> UpdateUserSettingsAsync(UpdateUserSettingsDto dto);
     }
 }

@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewsHub.Application.DTOs.User;
 using NewsHub.Application.Interfaces.Services.Users;
+using NewsHub.Domain.Enums;
+using NewsHub.Web.Common.Extensions;
 using NewsHub.Web.ViewModels.Settings;
 
 namespace NewsHub.Web.Controllers
@@ -32,11 +35,47 @@ namespace NewsHub.Web.Controllers
                     UserName = u.UserName,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
-                    IsActive = u.IsActive
+                    IsActive = u.IsActive,
+                    Role = MapRole(u.Roles.FirstOrDefault())
                 }).ToList();
             }
 
             return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateUser(UpdateUserSettingsDto dto)
+        {
+            var result = await _manageUsersService.UpdateUserSettingsAsync(dto);
+
+            if (!result.Success)
+            {
+                TempData["Error"] = result.Message;
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Usuario actualizado correctamente.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        private static RolesEnums MapRole(string? roleName)
+        {
+            if (string.IsNullOrWhiteSpace(roleName))
+                return RolesEnums.User;
+
+            var normalized = roleName.Trim();
+
+            if (Enum.TryParse<RolesEnums>(normalized, true, out var parsed))
+                return parsed;
+
+            foreach (var role in Enum.GetValues<RolesEnums>())
+            {
+                if (string.Equals(EnumExtensions.GetDescription(role), normalized, StringComparison.OrdinalIgnoreCase))
+                    return role;
+            }
+
+            return RolesEnums.User;
         }
     }
 }
