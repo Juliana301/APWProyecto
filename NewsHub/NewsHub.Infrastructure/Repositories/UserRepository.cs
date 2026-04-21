@@ -20,7 +20,12 @@ namespace NewsHub.Infrastructure.Repositories
 
         public async Task<List<UserEnt>> GetAllUsersAsync(bool includeInactive)
         {
-            return await GetAllAsync(includeInactive).ConfigureAwait(false);
+            return await FindAsync(
+                predicate: u => includeInactive || u.IsActive,
+                include: query => query
+                    .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+            );
         }
 
         public async Task<UserEnt?> GetByEmailAsync(string email)

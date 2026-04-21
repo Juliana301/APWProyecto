@@ -1,4 +1,5 @@
-﻿using NewsHub.Application.DTOs.User;
+﻿using NewsHub.Application.Common;
+using NewsHub.Application.DTOs.User;
 using NewsHub.Application.Interfaces.Services.Users;
 using NewsHub.Domain.Interfaces.Repositories;
 using System;
@@ -16,28 +17,30 @@ namespace NewsHub.Application.Services.Users
             _userRepository = userRepository;
         }
 
-        public async Task<List<UserDto>> GetAllUsersAsync(bool includeInactive)
+        public async Task<Result<List<UserDto>>> GetAllUsersAsync(bool includeInactive)
         {
-            var users = await _userRepository.GetAllUsersAsync(includeInactive);
-            
-            if (users == null || !users.Any())
+            try
             {
-                return new List<UserDto>();
+                var users = await _userRepository.GetAllUsersAsync(includeInactive);
+
+                // Map UserEnt to UserDto
+                var userDtos = users.Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    IsActive = u.IsActive,
+                    Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList()
+                }).ToList();
+
+                return Result<List<UserDto>>.Ok(userDtos);
             }
-
-            // Map UserEnt to UserDto
-            var userDtos = users.Select(u => new UserDto
+            catch (Exception ex)
             {
-                Id = u.Id,
-                UserName = u.UserName,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                IsActive = u.IsActive,
-                Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList()
-            }).ToList();
-
-            return userDtos;
+                return Result<List<UserDto>>.Fail($"Error obteniendo usuarios: {ex.Message}", TypeMessage.Error);
+            }
         }
     }
 }

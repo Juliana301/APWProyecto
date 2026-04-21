@@ -30,4 +30,8 @@
     <ProjectReference Include="..\NewsHub.Infrastructure\NewsHub.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ViewModels\Settings\" />
+  </ItemGroup>
+
 </Project>

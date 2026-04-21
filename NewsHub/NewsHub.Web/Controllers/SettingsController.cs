@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewsHub.Application.Interfaces.Services.Users;
+using NewsHub.Web.ViewModels.Settings;
 
 namespace NewsHub.Web.Controllers
 {
@@ -16,17 +17,26 @@ namespace NewsHub.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var users = await _manageUsersService.GetAllUsersAsync(includeInactive: true);
 
-            return View();
-        }
+            var vm = new SettingsViewModel();
 
-        // WORK IN PROGRESS
-        private IActionResult GetUsersListView()
-        {
-            var users = _manageUsersService.GetAllUsersAsync(includeInactive: true).Result;
-            return PartialView("_UsersListPartial", users);
+            if (users.Success && users.Data != null)
+            {
+                vm.Users = users.Data.Select(u => new UsersViewModel
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    UserName = u.UserName,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    IsActive = u.IsActive
+                }).ToList();
+            }
+
+            return View(vm);
         }
     }
 }
