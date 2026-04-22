@@ -14,7 +14,6 @@ namespace NewsHub.Domain.Entities
         public DateTime? CreatedAt { get; private set; }
 
         public SourceEnt? Source { get; private set; }
-        public ICollection<FavoriteEnt> Favorites { get; private set; } = new List<FavoriteEnt>();
 
         private SourceItemEnt() { }
 
