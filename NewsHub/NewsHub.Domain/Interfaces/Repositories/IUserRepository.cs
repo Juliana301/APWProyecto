@@ -11,5 +11,6 @@ namespace NewsHub.Domain.Interfaces.Repositories
         Task<UserEnt?> GetByUserNameAsync(string userName);
         Task<List<UserEnt>> GetAllUsersAsync(bool includeInactive);
         Task<UserEnt?> GetByIdWithRolesAsync(int id);
+        Task<int> CountActiveAdminsAsync();
     }  
 }

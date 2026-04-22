@@ -58,6 +58,24 @@ namespace NewsHub.Application.Services.Users
                 if (user == null)
                     return Result<bool>.Fail("Usuario no encontrado.", TypeMessage.Warning);
 
+                var currentRoleName = user.UserRoles.FirstOrDefault()?.Role.Name;
+                var isCurrentlyAdmin = string.Equals(currentRoleName, "Admin", StringComparison.OrdinalIgnoreCase);
+
+                var isChangingFromAdminToNonAdmin = isCurrentlyAdmin && dto.Role != RolesEnums.Admin;
+                var isDeactivatingAdmin = isCurrentlyAdmin && !dto.IsActive;
+
+                if (isChangingFromAdminToNonAdmin || isDeactivatingAdmin)
+                {
+                    var activeAdmins = await _userRepository.CountActiveAdminsAsync();
+
+                    if (activeAdmins <= 1)
+                    {
+                        return Result<bool>.Fail(
+                            "Debe existir al menos un administrador activo en el sistema.",
+                            TypeMessage.Warning);
+                    }
+                }
+
                 var role = await _roleRepository.FirstAsync(r => r.Name == dto.Role.ToString());
 
                 if (role == null)

@@ -51,5 +51,12 @@ namespace NewsHub.Infrastructure.Repositories
                     .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role));
         }
+
+        public async Task<int> CountActiveAdminsAsync()
+        {
+            return await CountAsync(u =>
+                u.IsActive &&
+                u.UserRoles.Any(ur => ur.Role.Name == "Admin"));
+        }
     }
 }

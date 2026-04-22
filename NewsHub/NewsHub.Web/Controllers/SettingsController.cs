@@ -51,11 +51,11 @@ namespace NewsHub.Web.Controllers
 
             if (!result.Success)
             {
-                TempData["Error"] = result.Message;
+                TempData.SetToast(result.Error ?? "Error al actualizar el usuario", result.TypeMessage);
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["Success"] = "Usuario actualizado correctamente.";
+            TempData.SetToast(result.Message ?? "Usuario actualizado correctamente", result.TypeMessage);
             return RedirectToAction(nameof(Index));
         }
 
