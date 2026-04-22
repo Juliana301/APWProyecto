@@ -38,6 +38,7 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
             var token = await _apiResponseService.GetResponseTokenAsync(
                 config.IdsUrl,
                 config,
+                source.Id,
                 cancellationToken);
 
             var idsArray = JsonHelper.GetRootArray(token);
@@ -61,6 +62,7 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
                     var itemToken = await _apiResponseService.GetResponseTokenAsync(
                         url,
                         config,
+                        source.Id,
                         cancellationToken);
 
                     if (itemToken is not JObject obj)

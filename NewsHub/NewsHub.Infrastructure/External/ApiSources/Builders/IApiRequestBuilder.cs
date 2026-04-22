@@ -4,6 +4,6 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
 {
     public interface IApiRequestBuilder
     {
-        HttpRequestMessage Build(string url, ApiSourceConfig config);
+        Task<HttpRequestMessage> BuildAsync(string url, ApiSourceConfig config, int sourceId);
     }
 }

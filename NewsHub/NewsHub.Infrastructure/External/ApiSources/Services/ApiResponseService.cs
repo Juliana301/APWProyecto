@@ -30,12 +30,14 @@ namespace NewsHub.Infrastructure.External.ApiSources.Services
         public async Task<JToken> GetResponseTokenAsync(
             string url,
             ApiSourceConfig config,
+            int sourceId,
             CancellationToken cancellationToken = default)
         {
-            var cacheKey = BuildCacheKey(url, config);
+            var cacheKey = BuildCacheKey(url, config, sourceId);
 
             _logger.LogInformation(
-                "Fetching API response. Url: {Url}, CacheMinutes: {CacheMinutes}",
+                "Fetching API response. SourceId: {SourceId}, Url: {Url}, CacheMinutes: {CacheMinutes}",
+                sourceId,
                 url,
                 config.CacheMinutes);
 
@@ -43,12 +45,13 @@ namespace NewsHub.Infrastructure.External.ApiSources.Services
                 cacheKey,
                 async ct =>
                 {
-                    using var request = _apiRequestBuilder.Build(url, config);
+                    using var request = await _apiRequestBuilder.BuildAsync(url, config, sourceId);
 
                     _logger.LogDebug(
-                        "Sending HTTP request. Method: {Method}, Url: {Url}",
+                        "Sending HTTP request. Method: {Method}, Url: {Url}, SourceId: {SourceId}",
                         request.Method,
-                        request.RequestUri);
+                        request.RequestUri,
+                        sourceId);
 
                     using var response = await _httpClient.SendAsync(request, ct);
                     var content = await response.Content.ReadAsStringAsync(ct);
@@ -56,9 +59,10 @@ namespace NewsHub.Infrastructure.External.ApiSources.Services
                     if (!response.IsSuccessStatusCode)
                     {
                         _logger.LogWarning(
-                            "API request failed. StatusCode: {StatusCode}, Url: {Url}, Response: {Response}",
+                            "API request failed. StatusCode: {StatusCode}, Url: {Url}, SourceId: {SourceId}, Response: {Response}",
                             (int)response.StatusCode,
                             request.RequestUri,
+                            sourceId,
                             Truncate(content, 1000));
 
                         response.EnsureSuccessStatusCode();
@@ -69,8 +73,9 @@ namespace NewsHub.Infrastructure.External.ApiSources.Services
                         var token = JToken.Parse(content);
 
                         _logger.LogInformation(
-                            "API request succeeded. Url: {Url}, StatusCode: {StatusCode}",
+                            "API request succeeded. Url: {Url}, SourceId: {SourceId}, StatusCode: {StatusCode}",
                             request.RequestUri,
+                            sourceId,
                             (int)response.StatusCode);
 
                         return token;
@@ -79,8 +84,9 @@ namespace NewsHub.Infrastructure.External.ApiSources.Services
                     {
                         _logger.LogError(
                             ex,
-                            "Invalid JSON received. Url: {Url}, Response: {Response}",
+                            "Invalid JSON received. Url: {Url}, SourceId: {SourceId}, Response: {Response}",
                             request.RequestUri,
+                            sourceId,
                             Truncate(content, 1000));
 
                         throw;
@@ -90,9 +96,9 @@ namespace NewsHub.Infrastructure.External.ApiSources.Services
                 cancellationToken);
         }
 
-        private static string BuildCacheKey(string url, ApiSourceConfig config)
+        private static string BuildCacheKey(string url, ApiSourceConfig config, int sourceId)
         {
-            var rawKey = $"{url}|{SerializeConfig(config)}";
+            var rawKey = $"{sourceId}|{url}|{SerializeConfig(config)}";
             var hash = ComputeSha256(rawKey);
             return $"api_cache_{hash}";
         }

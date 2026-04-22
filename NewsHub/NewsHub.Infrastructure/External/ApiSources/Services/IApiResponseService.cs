@@ -8,6 +8,7 @@ namespace NewsHub.Infrastructure.External.ApiSources.Services
         Task<JToken> GetResponseTokenAsync(
             string url,
             ApiSourceConfig config,
+            int sourceId,
             CancellationToken cancellationToken = default);
     }
 }

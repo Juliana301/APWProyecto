@@ -36,6 +36,8 @@ using NewsHub.Infrastructure.Repositories.Tokens;
 using NewsHub.Infrastructure.Security;
 using NewsHub.Application.Interfaces.Services.Users;
 using NewsHub.Application.Services.Users;
+using NewsHub.Application.Interfaces.Services.Secret;
+using NewsHub.Application.Services.Secret;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,6 +131,7 @@ builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ISourceRepository, SourceRepository>();
 builder.Services.AddScoped<ISourceItemRepository, SourceItemRepository>();
+builder.Services.AddScoped<ISecretRepository, SecretRepository>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 
@@ -141,6 +144,7 @@ builder.Services.AddScoped<IManageUsersService, ManageUsersService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<ISourceService, SourceService>();
 builder.Services.AddScoped<ISourceItemService, SourceItemService>();
+builder.Services.AddScoped<ISecretService, SecretService>();
 builder.Services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService>();
 
 // ======================================================

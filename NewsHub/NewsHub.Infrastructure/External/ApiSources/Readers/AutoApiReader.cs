@@ -30,6 +30,7 @@ namespace NewsHub.Infrastructure.External.ApiSources.Readers
             var token = await _apiResponseService.GetResponseTokenAsync(
                 source.Url,
                 config,
+                source.Id,
                 cancellationToken);
 
             var rootArray = JsonHelper.GetRootArray(token, config.Root);

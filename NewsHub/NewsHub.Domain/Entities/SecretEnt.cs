@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NewsHub.Domain.Entities
 {
@@ -8,7 +6,7 @@ namespace NewsHub.Domain.Entities
     {
         public int Id { get; private set; }
 
-        public int? SourceId { get; private set; }
+        public int SourceId { get; private set; }
 
         public string Key { get; private set; } = null!;
         public string Value { get; private set; } = null!;
@@ -16,11 +14,11 @@ namespace NewsHub.Domain.Entities
 
         public DateTime CreatedAt { get; private set; }
 
-        public SourceEnt? Source { get; private set; }
+        public SourceEnt Source { get; private set; } = null!;
 
         private SecretEnt() { }
 
-        public SecretEnt(string key, string value, bool isEncrypted, int? sourceId = null)
+        public SecretEnt(string key, string value, bool isEncrypted, int sourceId)
         {
             Key = key;
             Value = value;

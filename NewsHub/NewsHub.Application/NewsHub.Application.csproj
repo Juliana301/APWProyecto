@@ -16,6 +16,9 @@
 
   <ItemGroup>
     <Folder Include="Common\Interfaces\" />
+    <Folder Include="DTOs\Secret\" />
+    <Folder Include="Interfaces\Services\Secret\" />
+    <Folder Include="Services\Secret\" />
   </ItemGroup>
 
 </Project>

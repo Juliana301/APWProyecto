@@ -14,9 +14,9 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
             _environmentVariableResolver = environmentVariableResolver;
         }
 
-        public HttpRequestMessage Build(string url, ApiSourceConfig config)
+        public async Task<HttpRequestMessage> BuildAsync(string url, ApiSourceConfig config, int sourceId)
         {
-            url = _environmentVariableResolver.Resolve(url) ?? url;
+            url = await _environmentVariableResolver.ResolveAsync(url, sourceId) ?? url;
 
             var requestConfig = config.Request;
 
@@ -26,10 +26,18 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
 
             if (mergedQueryParams != null && mergedQueryParams.Count > 0)
             {
+                var resolvedQueryParams = new Dictionary<string, string>();
+
+                foreach (var item in mergedQueryParams)
+                {
+                    resolvedQueryParams[item.Key] =
+                        await _environmentVariableResolver.ResolveAsync(item.Value, sourceId) ?? item.Value;
+                }
+
                 url = UrlHelper.AddQueryString(
                     url,
-                    mergedQueryParams,
-                    _environmentVariableResolver.Resolve
+                    resolvedQueryParams,
+                    value => value
                 );
             }
 
@@ -43,12 +51,12 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
                 config.Headers,
                 requestConfig?.Headers);
 
-            AddHeaders(request, mergedHeaders);
+            await AddHeadersAsync(request, mergedHeaders, sourceId);
 
             if (requestConfig != null)
             {
-                AddAuthentication(request, requestConfig.Auth);
-                AddRequestBody(request, requestConfig);
+                await AddAuthenticationAsync(request, requestConfig.Auth, sourceId);
+                await AddRequestBodyAsync(request, requestConfig, sourceId);
             }
 
             return request;
@@ -82,14 +90,17 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
             return result;
         }
 
-        private void AddHeaders(HttpRequestMessage request, Dictionary<string, string>? headers)
+        private async Task AddHeadersAsync(
+            HttpRequestMessage request,
+            Dictionary<string, string>? headers,
+            int sourceId)
         {
             if (headers == null)
                 return;
 
             foreach (var header in headers)
             {
-                var value = _environmentVariableResolver.Resolve(header.Value);
+                var value = await _environmentVariableResolver.ResolveAsync(header.Value, sourceId);
 
                 if (string.IsNullOrWhiteSpace(value))
                     continue;
@@ -106,13 +117,16 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
             }
         }
 
-        private void AddAuthentication(HttpRequestMessage request, ApiAuthConfig? authConfig)
+        private async Task AddAuthenticationAsync(
+            HttpRequestMessage request,
+            ApiAuthConfig? authConfig,
+            int sourceId)
         {
             if (authConfig == null)
                 return;
 
             var authType = authConfig.Type;
-            var authValue = _environmentVariableResolver.Resolve(authConfig.Value);
+            var authValue = await _environmentVariableResolver.ResolveAsync(authConfig.Value, sourceId);
 
             if (string.IsNullOrWhiteSpace(authValue))
                 return;
@@ -136,7 +150,10 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
             }
         }
 
-        private void AddRequestBody(HttpRequestMessage request, ApiRequestConfig requestConfig)
+        private async Task AddRequestBodyAsync(
+            HttpRequestMessage request,
+            ApiRequestConfig requestConfig,
+            int sourceId)
         {
             if (request.Method == HttpMethod.Get || request.Method == HttpMethod.Head)
                 return;
@@ -148,7 +165,7 @@ namespace NewsHub.Infrastructure.External.ApiSources.Builders
 
             if (requestConfig.Body is string stringBody)
             {
-                content = _environmentVariableResolver.Resolve(stringBody) ?? string.Empty;
+                content = await _environmentVariableResolver.ResolveAsync(stringBody, sourceId) ?? string.Empty;
             }
             else
             {
