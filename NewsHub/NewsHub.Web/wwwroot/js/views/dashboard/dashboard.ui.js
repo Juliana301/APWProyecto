@@ -77,8 +77,12 @@ function createCard(item, isSaved) {
         .join('');
 
     const actionBtn = isSaved
-        ? `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i>Eliminar</button>`
-        : `<button onclick="saveNews('${safeId}')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"><i data-lucide="bookmark" class="w-3.5 h-3.5"></i>Guardar</button>`;
+        ? `<button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-green-600 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">
+        <i data-lucide="bookmark-check" class="w-3.5 h-3.5"></i>Saved
+       </button>`
+        : `<button onclick="saveNews('${safeId}')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors">
+        <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>Guardar
+       </button>`;
 
     const detailButton = `
         <a href="item-detail.html?id=${safeId}"
@@ -103,7 +107,7 @@ function createCard(item, isSaved) {
           <div class="px-5 py-3 border-t border-surface-100 dark:border-surface-700 flex items-center justify-between">
             ${actionBtn}
             <div class="flex items-center gap-1">
-              ${detailButton}
+              
               <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-surface-500 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors" onclick="downloadNewsJson('${safeId}')">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>JSON
               </button>
